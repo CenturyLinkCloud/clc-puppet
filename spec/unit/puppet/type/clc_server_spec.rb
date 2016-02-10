@@ -2,13 +2,13 @@ require 'spec_helper'
 require 'helpers/unit_spec_helper'
 
 describe Puppet::Type.type(:clc_server) do
-  let(:create_params) do
+  let(:create_params) {
     {
       :name   => 'name',
       :cpu    => 1,
       :memory => 1,
     }
-  end
+  }
 
   it_behaves_like "it has a validated name"
 
