@@ -1,4 +1,6 @@
-Puppet::Type.type(:clc_server).provide(:v2) do
+require_relative '../../../puppet_x/century_link/clc'
+
+Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   def self.instances
     raise NotImplementedError
   end
