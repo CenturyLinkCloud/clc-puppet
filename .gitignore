@@ -16,3 +16,4 @@ tags
 
 pkg/
 Gemfile.lock
+.envrc
