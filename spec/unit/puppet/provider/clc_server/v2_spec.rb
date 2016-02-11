@@ -32,8 +32,10 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
   end
 
   describe 'destroy' do
-    it 'is not implemented' do
-      expect { provider.destroy }.to raise_error(NotImplementedError)
+    it 'should send a request to the CLC API to destroy the server' do
+      VCR.use_cassette('destroy-server') do
+        expect(provider.destroy).to be_truthy
+      end
     end
   end
 end

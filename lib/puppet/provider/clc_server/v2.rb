@@ -1,6 +1,10 @@
 require_relative '../../../puppet_x/century_link/clc'
 
 Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
+  mk_resource_methods
+
+  read_only(:server_id)
+
   def self.instances
     raise NotImplementedError
   end
@@ -21,13 +25,16 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     client.wait_for(links['operation']['id'])
     server = client.follow(links['resource'])
 
-    @property_hash[:instance_id] = server['id']
+    @property_hash[:server_id] = server['id']
     @property_hash[:ensure] = :present
   end
 
   def destroy
-    Puppet.info("Deleting derver #{name}")
+    Puppet.info("Deleting server #{name}")
 
-    raise NotImplementedError
+    links = client.delete_server(server_id)
+    client.wait_for(links['operation']['id'])
+
+    @property_hash[:ensure] = :absent
   end
 end

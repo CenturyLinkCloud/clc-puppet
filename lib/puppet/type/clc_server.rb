@@ -17,7 +17,7 @@ Puppet::Type.newtype(:clc_server) do
     desc 'User-defined description of this server'
   end
 
-  newparam(:cpu) do
+  newproperty(:cpu) do
     desc 'Number of processors to configure the server with (1-16)'
     validate do |value|
       fail 'cpu should be an integer' unless value.is_a?(Fixnum)
@@ -25,7 +25,7 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:memory) do
+  newproperty(:memory) do
     desc 'Number of GB of memory to configure the server with'
     validate do |value|
       fail 'memory should be an integer' unless value.is_a?(Fixnum)
@@ -33,7 +33,7 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:group_id) do
+  newproperty(:group_id) do
     desc 'ID of the parent group'
     validate do |value|
       fail 'group_id should be a string' unless value.is_a?(String)
@@ -41,7 +41,7 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:source_server_id) do
+  newproperty(:source_server_id) do
     desc 'ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID'
     validate do |value|
       fail 'source_server_id should be a string' unless value.is_a?(String)
@@ -49,30 +49,37 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:managed, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+  newproperty(:managed, :boolean => true, :parent => Puppet::Parameter::Boolean) do
     desc 'Whether to create the server as managed or not'
     defaultto :false
   end
 
-  newparam(:type) do
+  newproperty(:type) do
     desc 'Whether to create a standard, hyperscale, or bareMetal server'
     newvalues(:standard, :hyperscale, :bareMetal)
     defaultto :standard
   end
 
-  newparam(:primary_dns) do
+  newproperty(:primary_dns) do
     desc 'Primary DNS to set on the server.'
   end
 
-  newparam(:secondary_dns) do
+  newproperty(:secondary_dns) do
     desc 'Secondary DNS to set on the server.'
   end
 
-  newparam(:ip_address) do
+  newproperty(:ip_address) do
     desc 'IP address to assign to the server. If not provided, one will be assigned automatically'
   end
 
-  newparam(:password) do
+  newproperty(:password) do
     desc 'Password of administrator or root user on server'
+  end
+
+  newproperty(:server_id) do
+    desc 'The CLC generated id for the server'
+    validate do |value|
+      fail 'server_id is read-only'
+    end
   end
 end
