@@ -56,6 +56,17 @@ describe Puppet::Type.type(:clc_server) do
     end
   end
 
+  describe 'managed_backup' do
+    it 'sets to false by default' do
+      expect(described_class.new(create_params)[:managed_backup]).to be false
+    end
+    it 'does not allow to set to true when "managed" is false' do
+      create_params[:managed] = false
+      create_params[:managed_backup] = true
+      expect { described_class.new(create_params) }.to raise_error(/managed_backup/)
+    end
+  end
+
   describe 'type' do
     [:standard, :hyperscale, :bareMetal].each do |type|
       it "allows #{type}" do
@@ -71,6 +82,13 @@ describe Puppet::Type.type(:clc_server) do
 
     it 'sets "standard" by default' do
       expect(described_class.new(create_params)[:type]).to eq :standard
+    end
+  end
+
+  describe 'ip_address' do
+    it 'validates value must be a valid IP' do
+      create_params[:ip_address] = 'invalid'
+      expect { described_class.new(create_params) }.to raise_error(/ip_address/)
     end
   end
 end

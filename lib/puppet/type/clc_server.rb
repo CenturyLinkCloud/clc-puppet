@@ -54,26 +54,53 @@ Puppet::Type.newtype(:clc_server) do
     defaultto :false
   end
 
+  newproperty(:managed_backup, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+    desc 'Whether to add managed backup to the server. Must be a managed OS server'
+    defaultto :false
+  end
+
+  validate do
+    if self[:managed_backup] && !self[:managed]
+      fail "you can't set managed_backup to true while managed is false"
+    end
+  end
+
   newproperty(:type) do
     desc 'Whether to create a standard, hyperscale, or bareMetal server'
     newvalues(:standard, :hyperscale, :bareMetal)
     defaultto :standard
   end
 
+  newproperty(:storage_type) do
+    desc 'Storage type'
+    newvalues(:standard, :premium, :hyperscale)
+  end
+
   newproperty(:primary_dns) do
-    desc 'Primary DNS to set on the server.'
+    desc 'Primary DNS to set on the server'
   end
 
   newproperty(:secondary_dns) do
-    desc 'Secondary DNS to set on the server.'
+    desc 'Secondary DNS to set on the server'
+  end
+
+  newproperty(:network_id) do
+    desc 'ID of the network to which to deploy the server. If not provided, a network will be chosen automatically'
   end
 
   newproperty(:ip_address) do
     desc 'IP address to assign to the server. If not provided, one will be assigned automatically'
+    validate do |value|
+      fail 'ip_address must be a valid ipv4 address' unless value =~ Resolv::IPv4::Regex
+    end
   end
 
   newproperty(:password) do
     desc 'Password of administrator or root user on server'
+  end
+
+  newproperty(:source_server_password) do
+    desc 'Password of the source server, used only when creating a clone from an existing server'
   end
 
   newproperty(:server_id) do

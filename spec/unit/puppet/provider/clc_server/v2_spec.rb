@@ -5,10 +5,16 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
   let(:resource) {
     Puppet::Type.type(:clc_server).new(
       name:             'test',
+      description:      'test server',
       group_id:         '5757349d19c343a88ce9a473fe2522f4',
       source_server_id: 'DEBIAN-7-64-TEMPLATE',
       cpu:              1,
       memory:           1,
+      type:             :standard,
+      primary_dns:      '4.4.4.4',
+      secondary_dns:    '8.8.8.8',
+      ip_address:       '192.168.1.10',
+      password:         'passw0rd',
     )
   }
 

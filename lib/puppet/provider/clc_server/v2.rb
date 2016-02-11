@@ -13,12 +13,22 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     Puppet.info("Starting server #{name}")
 
     params = {
-      'name'           => name,
-      'type'           => resource[:type],
-      'groupId'        => resource[:group_id],
-      'sourceServerId' => resource[:source_server_id],
-      'cpu'            => resource[:cpu],
-      'memoryGB'       => resource[:memory],
+      'name'                 => name,
+      'description'          => resource[:description],
+      'type'                 => resource[:type],
+      'groupId'              => resource[:group_id],
+      'sourceServerId'       => resource[:source_server_id],
+      'cpu'                  => resource[:cpu],
+      'memoryGB'             => resource[:memory],
+      'storageType'          => resource[:storage_type],
+      'isManagedOS'          => resource[:managed],
+      'isManagedBackup'      => resource[:managed_backup],
+      'primaryDns'           => resource[:primary_dns],
+      'secondaryDns'         => resource[:secondary_dns],
+      'networkId'            => resource[:network_id],
+      'ipAddress'            => resource[:ip_address],
+      'password'             => resource[:password],
+      'sourceServerPassword' => resource[:source_server_password],
     }
 
     links = client.create_server(params)
