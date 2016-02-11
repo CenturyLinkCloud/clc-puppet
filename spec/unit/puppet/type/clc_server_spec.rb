@@ -4,13 +4,29 @@ require 'helpers/unit_spec_helper'
 describe Puppet::Type.type(:clc_server) do
   let(:create_params) {
     {
-      :name   => 'name',
-      :cpu    => 1,
-      :memory => 1,
+      :name             => 'name',
+      :group_id         => 'group-id',
+      :source_server_id => 'server-id',
+      :cpu              => 1,
+      :memory           => 1,
     }
   }
 
   it_behaves_like "it has a validated name"
+
+  [:group_id, :source_server_id].each do |field|
+    describe field do
+      it 'should be invalid without a value' do
+        create_params[field] = nil
+        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
+      end
+
+      it 'should be invalid with a blank value' do
+        create_params[field] = '   '
+        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
+      end
+    end
+  end
 
   describe 'cpu' do
     it 'does not allow negatives' do

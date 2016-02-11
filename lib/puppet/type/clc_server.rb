@@ -33,6 +33,22 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
+  newparam(:group_id) do
+    desc 'ID of the parent group'
+    validate do |value|
+      fail 'group_id should be a string' unless value.is_a?(String)
+      fail 'server must have a group_id' if value.strip == ''
+    end
+  end
+
+  newparam(:source_server_id) do
+    desc 'ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID'
+    validate do |value|
+      fail 'source_server_id should be a string' unless value.is_a?(String)
+      fail 'server must have a source_server_id' if value.strip == ''
+    end
+  end
+
   newparam(:managed, :boolean => true, :parent => Puppet::Parameter::Boolean) do
     desc 'Whether to create the server as managed or not'
     defaultto :false
