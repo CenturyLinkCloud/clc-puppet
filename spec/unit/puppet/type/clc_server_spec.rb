@@ -12,20 +12,8 @@ describe Puppet::Type.type(:clc_server) do
     }
   }
 
-  it_behaves_like "it has a validated name"
-
-  [:group_id, :source_server_id].each do |field|
-    describe field do
-      it 'should be invalid without a value' do
-        create_params[field] = nil
-        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
-      end
-
-      it 'should be invalid with a blank value' do
-        create_params[field] = '   '
-        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
-      end
-    end
+  [:name, :group_id, :source_server_id].each do |field|
+    it_behaves_like "it has a non-empty string parameter", field
   end
 
   describe 'cpu' do
