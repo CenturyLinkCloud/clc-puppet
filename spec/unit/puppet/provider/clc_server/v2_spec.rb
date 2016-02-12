@@ -20,11 +20,6 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
 
   let(:provider) { resource.provider }
 
-  before(:all) do
-    ENV['CLC_USERNAME'] = 'redacted'
-    ENV['CLC_PASSWORD'] = 'redacted'
-  end
-
   it 'should be an instance of the ProviderV2' do
     expect(provider).to be_an_instance_of Puppet::Type::Clc_server::ProviderV2
   end

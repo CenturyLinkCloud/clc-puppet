@@ -23,3 +23,6 @@ VCR.configure do |c|
     auth_header.first if auth_header
   end
 end
+
+ENV['CLC_USERNAME'] = 'redacted'
+ENV['CLC_PASSWORD'] = 'redacted'
