@@ -31,7 +31,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       'sourceServerPassword' => resource[:source_server_password],
     }
 
-    links = client.create_server(params)
+    links = client.create_server(remove_null_values(params))
     client.wait_for(links['operation']['id'])
     server = client.follow(links['resource'])
 

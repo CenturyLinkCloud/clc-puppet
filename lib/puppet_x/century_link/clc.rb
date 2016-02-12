@@ -13,7 +13,7 @@ module PuppetX
       end
 
       def client
-        PuppetX::CenturyLink::Client.new(client_config)
+        @client ||= PuppetX::CenturyLink::Client.new(client_config)
       end
 
       def client_config
@@ -22,6 +22,15 @@ module PuppetX
           username: config.username,
           password: config.password,
         }
+      end
+
+      private
+
+      def remove_null_values(hash)
+        hash.inject({}) do |acc, (key, value)|
+          acc[key] = value unless value.nil?
+          acc
+        end
       end
     end
   end
