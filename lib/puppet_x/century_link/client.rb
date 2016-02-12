@@ -24,124 +24,30 @@ module PuppetX
         @account = authenticate(params[:username], params[:password])
       end
 
-      def list_datacenters
-        connection.get("v2/datacenters/#{@account}").body
-      end
-
-      def show_datacenter(id, group_links = true)
-        connection.get("v2/datacenters/#{@account}/#{id}?groupLinks=#{group_links}").body
-      end
-
-      def list_servers(datacenter_id = 'ca1')
-        datacenter = show_datacenter(datacenter_id)
-        group_links = datacenter['links'].select { |l| l['rel'] == 'group' }
-
-        groups = group_links.map do |link|
-          group = connection.get("v2/groups/#{@account}/#{link['id']}?serverDetail=detailed").body
-          flatten_groups(group)
-        end.flatten
-
-        groups.map { |group| group['servers'] }.flatten.compact
-      end
-
-      def show_server(id, uuid = false)
-        connection.get("/v2/servers/#{@account}/#{id}?uuid=#{uuid}").body
-      end
-
-      # TODO: Takes a lot of time
       def create_server(params)
-        body = connection.post("/v2/servers/#{account}", params).body
-        async_response(body)
+        server = request(:post, "/v2/servers/#{account}", params)
+        wait_for(status_id(server))
+        request(:get, self_url(server))
       end
 
       def delete_server(id)
-        body = connection.delete("v2/servers/#{account}/#{id}").body
-        async_response(body)
-      end
-
-      # TODO: Reset is quicker. Probably 'hard-reset'
-      def reset_server(id)
-        response = connection.post("/v2/operations/#{account}/servers/reset", [id])
-        body = response.body.first
-        async_response(body)
-      end
-
-      # TODO: Reboot is slower. Looks like OS-level reboot
-      def reboot_server(id)
-        response = connection.post("/v2/operations/#{account}/servers/reboot", [id])
-        body = response.body.first
-        async_response(body)
-      end
-
-      def power_on_server(id)
-        response = connection.post("/v2/operations/#{account}/servers/powerOn", [id])
-        body = response.body.first
-        async_response(body)
-      end
-
-      def power_off_server(id)
-        response = connection.post("/v2/operations/#{account}/servers/powerOff", [id])
-        body = response.body.first
-        async_response(body)
-      end
-
-      def list_templates(datacenter_id)
-        url = "/v2/datacenters/#{account}/#{datacenter_id}/deploymentCapabilities"
-        connection.get(url).body.fetch('templates')
-      end
-
-      def create_ip_address(server_id, params)
-        body = connection.post(
-          "/v2/servers/#{account}/#{server_id}/publicIPAddresses",
-          params
-        ).body
-
-        async_response('links' => [body])
-      end
-
-      def delete_ip_address(server_id, ip_string)
-        url = "/v2/servers/#{account}/#{server_id}/publicIPAddresses/#{ip_string}"
-        body = connection.delete(url).body
-
-        async_response('links' => [body])
-      end
-
-      def list_ip_addresses(server_id)
-        server = show_server(server_id)
-
-        ip_links = server['links'].select do |link|
-          link['rel'] == 'publicIPAddress'
-        end
-
-        ip_links.map { |link| follow(link).merge('id' => link['id']) }
-      end
-
-      def show_operation(id)
-        connection.get("v2/operations/#{account}/status/#{id}").body
-      end
-
-      def show_group(id, params = {})
-        connection.get("v2/groups/#{account}/#{id}", params).body
-      end
-
-      def list_groups(datacenter_id)
-        datacenter = show_datacenter(datacenter_id, true)
-
-        root_group_link = datacenter['links'].detect { |link| link['rel'] == 'group' }
-
-        flatten_groups(show_group(root_group_link['id']))
+        body = request(:delete, "v2/servers/#{account}/#{id}")
+        wait_for(status_id(body))
+        true
       end
 
       def create_group(params)
-        connection.post("/v2/groups/#{account}", params).body
+        request(:post, "/v2/groups/#{account}", params)
       end
 
       def delete_group(id)
-        connection.delete("/v2/groups/#{account}/#{id}").body
+        body = request(:delete, "/v2/groups/#{account}/#{id}")
+        wait_for(body['id'])
+        true
       end
 
       def follow(link)
-        connection.get(link['href']).body
+        request(:get, link['href'])
       end
 
       def wait_for(operation_id, timeout = 1200)
@@ -177,34 +83,42 @@ module PuppetX
       end
 
       def authenticate(username, password)
-        response = @connection.post('/v2/authentication/login',
+        response = request(:post, '/v2/authentication/login',
           'username' => username,
           'password' => password
         )
 
-        @connection.authorization :Bearer, response.body.fetch('bearerToken')
-        response.body.fetch('accountAlias')
+        connection.authorization :Bearer, response.fetch('bearerToken')
+        response.fetch('accountAlias')
       end
 
-      def async_response(body)
-        check_errors(body)
-        extract_links(body)
+      def request(method, url, params = nil)
+        args = [url]
+        args << params if params
+        response = connection.send(method, *args)
+        response.body
       end
 
-      def check_errors(body)
-        if error = body['errorMessage']
-          raise error
-        elsif body['isQueued'] == false
-          raise 'Cloud refused to queue the operation'
-        end
+      def show_operation(id)
+        connection.get("v2/operations/#{account}/status/#{id}").body
       end
 
-      def extract_links(body)
-        links = body['links']
-        {
-          'resource' => links.find { |link| link['rel'] == 'self' },
-          'operation' => links.find { |link| link['rel'] == 'status' }
-        }.keep_if { |_, value| value }
+      def status_id(body)
+        status_link = status_link(body)
+        raise "Status link not found" unless status_link
+        status_link['id']
+      end
+
+      def status_link(body)
+        body['links'].find { |link| link['rel'] == 'status' }
+      end
+
+      def self_link(body)
+        body['links'].find { |link| link['rel'] == 'self' }
+      end
+
+      def self_url(body)
+        self_link(body)['href']
       end
 
       def setup_logging(builder, verbosity)
@@ -214,12 +128,6 @@ module PuppetX
         when 2
           builder.response :logger, ::Logger.new(STDOUT), :bodies => true
         end
-      end
-
-      def flatten_groups(group)
-        child_groups = group.delete('groups')
-        return [group] unless child_groups && child_groups.any?
-        [group] + child_groups.map { |child| flatten_groups(child) }.flatten
       end
     end
   end

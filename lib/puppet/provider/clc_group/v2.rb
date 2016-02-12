@@ -23,8 +23,7 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   def destroy
     Puppet.info("Deleting group #{name}")
 
-    status = client.delete_group(group_id)
-    client.wait_for(status['id'])
+    client.delete_group(group_id)
 
     @property_hash[:ensure] = :absent
   end
