@@ -1,4 +1,5 @@
 require_relative 'client'
+require_relative 'config'
 
 module PuppetX
   module CenturyLink

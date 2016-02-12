@@ -13,7 +13,7 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:description) do
+  newproperty(:description) do
     desc 'User-defined description of this server'
   end
 

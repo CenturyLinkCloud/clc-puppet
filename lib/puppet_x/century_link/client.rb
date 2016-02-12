@@ -136,6 +136,10 @@ module PuppetX
         connection.post("/v2/groups/#{account}", params).body
       end
 
+      def delete_group(id)
+        connection.delete("/v2/groups/#{account}/#{id}").body
+      end
+
       def follow(link)
         connection.get(link['href']).body
       end
