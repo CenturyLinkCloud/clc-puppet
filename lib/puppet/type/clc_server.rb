@@ -1,4 +1,5 @@
 require 'puppet/parameter/boolean'
+require 'puppet_x/century_link/property/custom_field'
 
 Puppet::Type.newtype(:clc_server) do
   desc 'CenturyLink cloud virtual machine instance'
@@ -108,5 +109,9 @@ Puppet::Type.newtype(:clc_server) do
     validate do |value|
       fail 'server_id is read-only'
     end
+  end
+
+  newproperty(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do
+    desc 'Collection of custom field ID-value pairs to set for the server'
   end
 end

@@ -18,6 +18,8 @@ describe Puppet::Type.type(:clc_server) do
 
   it_behaves_like "it has a read-only parameter", :server_id
 
+  it_behaves_like "it has custom fields"
+
   describe 'cpu' do
     it 'does not allow negatives' do
       create_params[:cpu] = -1

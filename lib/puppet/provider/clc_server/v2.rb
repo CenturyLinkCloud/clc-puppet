@@ -29,6 +29,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       'ipAddress'            => resource[:ip_address],
       'password'             => resource[:password],
       'sourceServerPassword' => resource[:source_server_password],
+      'customFields'         => resource[:custom_fields],
     }
 
     server = client.create_server(remove_null_values(params))
