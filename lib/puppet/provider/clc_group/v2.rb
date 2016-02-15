@@ -12,6 +12,7 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
       'name'          => name,
       'description'   => resource[:description],
       'parentGroupId' => resource[:parent_group_id],
+      'customFields'  => resource[:custom_fields],
     }
 
     group = client.create_group(params)
