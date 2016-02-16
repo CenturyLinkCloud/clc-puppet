@@ -1,5 +1,6 @@
 require 'puppet/parameter/boolean'
 require 'puppet_x/century_link/property/custom_field'
+require 'puppet_x/century_link/property/hash'
 
 Puppet::Type.newtype(:clc_server) do
   desc 'CenturyLink cloud virtual machine instance'
@@ -113,5 +114,26 @@ Puppet::Type.newtype(:clc_server) do
 
   newproperty(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do
     desc 'Collection of custom field ID-value pairs to set for the server'
+  end
+
+  newproperty(:public_ip_address, parent: PuppetX::CenturyLink::Property::Hash) do
+    desc 'Public IP address'
+    validate do |value|
+      super(value)
+
+      ports = value[:ports] || value['ports']
+      fail 'ports must be an array' unless ports.is_a?(Array)
+      ports.each do |port|
+        fail 'ports entry must be a hash' unless port.is_a?(::Hash)
+      end
+
+      source_restrictions = value[:source_restrictions] || value['source_restrictions']
+      if source_restrictions
+        fail 'source_restrictions must be an array' unless source_restrictions.is_a?(Array)
+        source_restrictions.each do |restriction|
+          fail 'source_restrictions entry must be a hash' unless restriction.is_a?(::Hash)
+        end
+      end
+    end
   end
 end

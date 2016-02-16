@@ -95,4 +95,35 @@ describe Puppet::Type.type(:clc_server) do
       expect { described_class.new(create_params) }.to raise_error(/ip_address/)
     end
   end
+
+  describe 'public_ip_address' do
+    it 'validates value must be a hash' do
+      create_params[:public_ip_address] = 'invalid'
+      expect { described_class.new(create_params) }.to raise_error(/public_ip_address/)
+    end
+
+    describe 'ports' do
+      it 'validates ports is an array' do
+        create_params[:public_ip_address] = { ports: 'invalid' }
+        expect { described_class.new(create_params) }.to raise_error(/ports/)
+      end
+
+      it 'validates port entry is a hash' do
+        create_params[:public_ip_address] = { ports: ['invalid'] }
+        expect { described_class.new(create_params) }.to raise_error(/ports/)
+      end
+    end
+
+    describe 'source_restrictions' do
+      it 'validates source_restrictions is an array' do
+        create_params[:public_ip_address] = { ports: [], source_restrictions: 'invalid' }
+        expect { described_class.new(create_params) }.to raise_error(/source_restrictions/)
+      end
+
+      it 'validates source_restrictions entry is a hash' do
+        create_params[:public_ip_address] = { ports: [], source_restrictions: ['invalid'] }
+        expect { described_class.new(create_params) }.to raise_error(/source_restrictions/)
+      end
+    end
+  end
 end

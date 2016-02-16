@@ -13,8 +13,16 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
       type:             :standard,
       primary_dns:      '4.4.4.4',
       secondary_dns:    '8.8.8.8',
-      ip_address:       '192.168.1.10',
-      password:         'passw0rd',
+      password:         'passw0rd_',
+      public_ip_address: {
+        ports: [
+          protocol: "TCP",
+          port: 80,
+        ],
+        source_restrictions: [
+          { cidr: '0.0.0.0/32' }
+        ]
+      }
     )
   }
 

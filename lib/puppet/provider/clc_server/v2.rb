@@ -36,6 +36,12 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
     @property_hash[:server_id] = server['id']
     @property_hash[:ensure] = :present
+
+    if resource[:public_ip_address]
+      client.create_public_ip(@property_hash[:server_id], public_ip_params(resource[:public_ip_address]))
+    end
+
+    true
   end
 
   def destroy
@@ -44,5 +50,15 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     client.delete_server(server_id)
 
     @property_hash[:ensure] = :absent
+    true
+  end
+
+  private
+
+  def public_ip_params(params)
+    remove_null_values({
+      'ports'              => params[:ports],
+      'sourceRestrictions' => params[:source_restrictions]
+    })
   end
 end

@@ -5,6 +5,8 @@ require 'logger'
 module PuppetX
   module CenturyLink
     class Client
+      class ServerError < StandardError; end
+
       attr_reader :account
       attr_reader :connection
 
@@ -25,15 +27,30 @@ module PuppetX
       end
 
       def create_server(params)
-        server = request(:post, "/v2/servers/#{account}", params)
+        server = request(:post, "v2/servers/#{account}", params)
         wait_for(status_id(server))
         request(:get, self_url(server))
       end
 
       def delete_server(id)
-        body = request(:delete, "v2/servers/#{account}/#{id}")
-        wait_for(status_id(body))
+        response = request(:delete, "v2/servers/#{account}/#{id}")
+        wait_for(status_id(response))
         true
+      end
+
+      def list_servers(datacenter_id = get_datacenter_ids)
+        datacenter_ids = Array(datacenter_id)
+
+        datacenter_ids.map do |dc_id|
+          datacenter = show_datacenter(dc_id)
+          group_links = datacenter['links'].select { |l| l['rel'] == 'group' }
+          groups = group_links.map do |link|
+            group = request(:get, "v2/groups/#{account}/#{link['id']}?serverDetail=detailed")
+            flatten_groups(group)
+          end.flatten
+
+          groups.map { |group| group['servers'] }.flatten.compact
+        end.flatten
       end
 
       def create_group(params)
@@ -41,8 +58,14 @@ module PuppetX
       end
 
       def delete_group(id)
-        body = request(:delete, "/v2/groups/#{account}/#{id}")
-        wait_for(body['id'])
+        response = request(:delete, "v2/groups/#{account}/#{id}")
+        wait_for(response['id'])
+        true
+      end
+
+      def create_public_ip(server_id, params)
+        response = request(:post, "v2/servers/#{account}/#{server_id}/publicIPAddresses", params)
+        wait_for(response['id'])
         true
       end
 
@@ -96,11 +119,26 @@ module PuppetX
         args = [url]
         args << params if params
         response = connection.send(method, *args)
+        if response.status == 500
+          raise ServerError.new(response.body['message'])
+        end
         response.body
       end
 
       def show_operation(id)
         connection.get("v2/operations/#{account}/status/#{id}").body
+      end
+
+      def list_datacenters
+        request(:get, "v2/datacenters/#{account}")
+      end
+
+      def show_datacenter(id, group_links = true)
+        request(:get, "v2/datacenters/#{account}/#{id}?groupLinks=#{group_links}")
+      end
+
+      def get_datacenter_ids
+        list_datacenters.map { |dc| dc['id'] }
       end
 
       def status_id(body)
@@ -119,6 +157,12 @@ module PuppetX
 
       def self_url(body)
         self_link(body)['href']
+      end
+
+      def flatten_groups(group)
+        child_groups = group.delete('groups')
+        return [group] unless child_groups && child_groups.any?
+        [group] + child_groups.map { |child| flatten_groups(child) }.flatten
       end
 
       def setup_logging(builder, verbosity)
