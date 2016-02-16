@@ -5,6 +5,36 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
 
   read_only(:group_id)
 
+  IGNORE_GROUP_NAMES = ['Archive', 'Templates']
+
+  def self.instances
+    groups = client.list_groups
+    groups.map { |group| new(group_to_hash(group)) }
+  end
+
+  def self.prefetch(resources)
+    instances.each do |prov|
+      if !IGNORE_GROUP_NAMES.include?(prov.name) && resource = resources[prov.name]
+        resource.provider = prov
+      end
+    end
+  end
+
+  def self.group_to_hash(group)
+    {
+      group_id:        group['id'],
+      name:            group['name'],
+      description:     group['description'],
+      custom_fields:   group['customFields'],
+      ensure:          :present,
+    }
+  end
+
+  def exists?
+    Puppet.info("Checking if group #{name} exists")
+    @property_hash[:ensure] == :present
+  end
+
   def create
     Puppet.info("Creating group #{name}")
 

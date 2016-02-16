@@ -38,10 +38,8 @@ module PuppetX
         true
       end
 
-      def list_servers(datacenter_id = get_datacenter_ids)
-        datacenter_ids = Array(datacenter_id)
-
-        datacenter_ids.map do |dc_id|
+      def list_servers(datacenter_id = datacenter_ids)
+        Array(datacenter_id).map do |dc_id|
           datacenter = show_datacenter(dc_id)
           group_links = datacenter['links'].select { |l| l['rel'] == 'group' }
           groups = group_links.map do |link|
@@ -53,8 +51,18 @@ module PuppetX
         end.flatten
       end
 
+      def list_groups
+        list_datacenters.map do |dc|
+          group_links = dc['links'].select { |link| link['rel'] == 'group' }
+          groups = group_links.map do |link|
+            group = request(:get, "v2/groups/#{account}/#{link['id']}")
+            flatten_groups(group)
+          end.flatten
+        end.flatten
+      end
+
       def create_group(params)
-        request(:post, "/v2/groups/#{account}", params)
+        request(:post, "v2/groups/#{account}", params)
       end
 
       def delete_group(id)
@@ -126,18 +134,18 @@ module PuppetX
       end
 
       def show_operation(id)
-        connection.get("v2/operations/#{account}/status/#{id}").body
+        request(:get, "v2/operations/#{account}/status/#{id}")
       end
 
-      def list_datacenters
-        request(:get, "v2/datacenters/#{account}")
+      def list_datacenters(group_links = true)
+        request(:get, "v2/datacenters/#{account}?groupLinks=#{group_links}")
       end
 
       def show_datacenter(id, group_links = true)
         request(:get, "v2/datacenters/#{account}/#{id}?groupLinks=#{group_links}")
       end
 
-      def get_datacenter_ids
+      def datacenter_ids
         list_datacenters.map { |dc| dc['id'] }
       end
 

@@ -1,5 +1,5 @@
 require 'puppet/parameter/boolean'
-require 'puppet_x/century_link/property/custom_field'
+require_relative '../../puppet_x/century_link/property/custom_field'
 
 Puppet::Type.newtype(:clc_group) do
   desc 'CenturyLink cloud billing group'
@@ -18,7 +18,7 @@ Puppet::Type.newtype(:clc_group) do
     desc 'User-defined description of this group'
   end
 
-  newproperty(:parent_group_id) do
+  newparam(:parent_group_id) do
     desc 'ID of the parent group'
     validate do |value|
       fail 'parent_group_id should be a string' unless value.is_a?(String)

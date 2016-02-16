@@ -12,11 +12,15 @@ module PuppetX
         end
       end
 
-      def client
+      def self.client
         @client ||= PuppetX::CenturyLink::Client.new(client_config)
       end
 
-      def client_config
+      def client
+        self.class.client
+      end
+
+      def self.client_config
         config = PuppetX::CenturyLink::Config.new
         {
           username: config.username,
