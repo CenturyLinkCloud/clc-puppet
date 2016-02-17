@@ -16,7 +16,7 @@ VCR.configure do |c|
   end
   c.filter_sensitive_data('<AUTH_TOKEN>') do |interaction|
     body = JSON.parse(interaction.response.body)
-    body['bearerToken'] if body['bearerToken']
+    body['bearerToken'] if body.is_a?(Hash) && body.has_key?('bearerToken')
   end
   c.filter_sensitive_data('<AUTH_TOKEN>') do |interaction|
     auth_header = interaction.request.headers['Authorization']

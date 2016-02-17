@@ -5,7 +5,6 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
   let(:resource) {
     Puppet::Type.type(:clc_server).new(
       name:             'test',
-      description:      'test server',
       group_id:         '5757349d19c343a88ce9a473fe2522f4',
       source_server_id: 'DEBIAN-7-64-TEMPLATE',
       cpu:              1,
@@ -44,6 +43,22 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
     it 'should send a request to the CLC API to destroy the server' do
       VCR.use_cassette('destroy-server') do
         expect(provider.destroy).to be_truthy
+      end
+    end
+  end
+
+  describe 'stop' do
+    it 'should send a request to the CLC API to shutdown the server' do
+      VCR.use_cassette('stop-server') do
+        expect(provider.stop).to be_truthy
+      end
+    end
+  end
+
+  describe 'pause' do
+    it 'should send a request to the CLC API to pause the server' do
+      VCR.use_cassette('pause-server') do
+        expect(provider.pause).to be_truthy
       end
     end
   end

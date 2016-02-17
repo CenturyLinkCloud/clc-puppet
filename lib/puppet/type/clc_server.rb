@@ -1,22 +1,44 @@
 require 'puppet/parameter/boolean'
-require 'puppet_x/century_link/property/custom_field'
-require 'puppet_x/century_link/property/hash'
+require_relative '../../puppet_x/century_link/property/custom_field'
+require_relative '../../puppet_x/century_link/property/hash'
 
 Puppet::Type.newtype(:clc_server) do
   desc 'CenturyLink cloud virtual machine instance'
 
-  ensurable
+  newproperty(:ensure) do
+    newvalue(:present) do
+      provider.create unless provider.started?
+    end
+    newvalue(:absent) do
+      provider.destroy if provider.exists?
+    end
+    newvalue(:started) do
+      provider.create unless provider.started?
+    end
+    newvalue(:stopped) do
+      provider.stop unless provider.stopped?
+    end
+    newvalue(:paused) do
+      provider.pause unless provider.paused?
+    end
+    def insync?(is)
+      is.to_s == should.to_s or
+        (is.to_s == 'started' and should.to_s == 'present') or
+        (is.to_s == 'stopped' and should.to_s == 'present') or
+        (is.to_s == 'paused' and should.to_s == 'present')
+    end
+  end
 
   newparam(:name) do
     desc 'Name of the server'
     validate do |value|
       fail 'name should be a string' unless value.is_a?(String)
       fail 'server must have a name' if value.strip == ''
-    end
-  end
 
-  newproperty(:description) do
-    desc 'User-defined description of this server'
+      if value.length < 1 || value.length > 8
+        fail 'name length should be minimum length of 1 and a maximum length of 8'
+      end
+    end
   end
 
   newproperty(:cpu) do
@@ -38,25 +60,46 @@ Puppet::Type.newtype(:clc_server) do
   newproperty(:group_id) do
     desc 'ID of the parent group'
     validate do |value|
-      fail 'group_id should be a string' unless value.is_a?(String)
-      fail 'server must have a group_id' if value.strip == ''
+      if value
+        fail 'group_id should be a string' unless value.is_a?(String)
+        fail 'server must have a group_id' if value.strip == ''
+      end
     end
   end
 
-  newproperty(:source_server_id) do
-    desc 'ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID'
+  newproperty(:group) do
+    desc 'Name of the parent group'
+    validate do |value|
+      if value
+        fail 'group should be a string' unless value.is_a?(String)
+        fail 'server must have a group' if value.strip == ''
+      end
+    end
+  end
+
+  validate do
+    group = self[:group]
+    group_id = self[:group_id]
+
+    if group.nil? && group_id.nil?
+      fail 'server must have a group or group_id'
+    end
+  end
+
+  newparam(:source_server_id) do
+    desc 'ID of the server to use a source. May be the ID of a template'
     validate do |value|
       fail 'source_server_id should be a string' unless value.is_a?(String)
       fail 'server must have a source_server_id' if value.strip == ''
     end
   end
 
-  newproperty(:managed, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+  newparam(:managed, :boolean => true, :parent => Puppet::Parameter::Boolean) do
     desc 'Whether to create the server as managed or not'
     defaultto :false
   end
 
-  newproperty(:managed_backup, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+  newparam(:managed_backup, :boolean => true, :parent => Puppet::Parameter::Boolean) do
     desc 'Whether to add managed backup to the server. Must be a managed OS server'
     defaultto :false
   end
@@ -67,41 +110,41 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newproperty(:type) do
+  newparam(:type) do
     desc 'Whether to create a standard, hyperscale, or bareMetal server'
     newvalues(:standard, :hyperscale, :bareMetal)
     defaultto :standard
   end
 
-  newproperty(:storage_type) do
+  newparam(:storage_type) do
     desc 'Storage type'
     newvalues(:standard, :premium, :hyperscale)
   end
 
-  newproperty(:primary_dns) do
+  newparam(:primary_dns) do
     desc 'Primary DNS to set on the server'
   end
 
-  newproperty(:secondary_dns) do
+  newparam(:secondary_dns) do
     desc 'Secondary DNS to set on the server'
   end
 
-  newproperty(:network_id) do
+  newparam(:network_id) do
     desc 'ID of the network to which to deploy the server. If not provided, a network will be chosen automatically'
   end
 
-  newproperty(:ip_address) do
+  newparam(:ip_address) do
     desc 'IP address to assign to the server. If not provided, one will be assigned automatically'
     validate do |value|
       fail 'ip_address must be a valid ipv4 address' unless value =~ Resolv::IPv4::Regex
     end
   end
 
-  newproperty(:password) do
+  newparam(:password) do
     desc 'Password of administrator or root user on server'
   end
 
-  newproperty(:source_server_password) do
+  newparam(:source_server_password) do
     desc 'Password of the source server, used only when creating a clone from an existing server'
   end
 
@@ -112,11 +155,11 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newproperty(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do
+  newparam(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do
     desc 'Collection of custom field ID-value pairs to set for the server'
   end
 
-  newproperty(:public_ip_address, parent: PuppetX::CenturyLink::Property::Hash) do
+  newparam(:public_ip_address, parent: PuppetX::CenturyLink::Property::Hash) do
     desc 'Public IP address'
     validate do |value|
       super(value)
@@ -135,5 +178,9 @@ Puppet::Type.newtype(:clc_server) do
         end
       end
     end
+  end
+
+  autorequire(:clc_group) do
+    self[:group]
   end
 end

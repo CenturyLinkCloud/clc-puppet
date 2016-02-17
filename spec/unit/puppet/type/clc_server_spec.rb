@@ -12,13 +12,27 @@ describe Puppet::Type.type(:clc_server) do
     }
   }
 
-  [:name, :group_id, :source_server_id].each do |field|
+  [:name, :source_server_id].each do |field|
     it_behaves_like "it has a non-empty string parameter", field
   end
 
   it_behaves_like "it has a read-only parameter", :server_id
 
   it_behaves_like "it has custom fields"
+
+  [:group, :group_id].each do |field|
+    describe field do
+      it "should be invalid given non-string" do
+        create_params[field] = 1
+        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
+      end
+
+      it "should be invalid given an empty string" do
+        create_params[field] = '   '
+        expect { described_class.new(create_params) }.to raise_error(/#{field}/)
+      end
+    end
+  end
 
   describe 'cpu' do
     it 'does not allow negatives' do

@@ -6,6 +6,8 @@ module PuppetX
   module CenturyLink
     class Client
       class ServerError < StandardError; end
+      class InvalidRequest < StandardError; end
+      class ResourceNotFound < StandardError; end
 
       attr_reader :account
       attr_reader :connection
@@ -35,6 +37,32 @@ module PuppetX
       def delete_server(id)
         response = request(:delete, "v2/servers/#{account}/#{id}")
         wait_for(status_id(response))
+        true
+      end
+
+      def shutdown_server(id)
+        response = request(:post, "v2/operations/#{account}/servers/shutDown", [id])
+        server_response = response.first
+        unless server_response['isQueued']
+          raise InvalidRequest.new(server_response['errorMessage'])
+        end
+        wait_for(status_id(server_response))
+        true
+      end
+
+      def pause_server(id)
+        response = request(:post, "v2/operations/#{account}/servers/pause", [id])
+        server_response = response.first
+        unless server_response['isQueued']
+          raise InvalidRequest.new(server_response['errorMessage'])
+        end
+        wait_for(status_id(server_response))
+        true
+      end
+
+      def power_on_server(id)
+        response = request(:post, "v2/operations/#{account}/servers/powerOn", [id])
+        wait_for(status_id(response.first))
         true
       end
 
@@ -69,6 +97,10 @@ module PuppetX
         response = request(:delete, "v2/groups/#{account}/#{id}")
         wait_for(response['id'])
         true
+      end
+
+      def get_group(id)
+        request(:get, "v2/groups/#{account}/#{id}")
       end
 
       def create_public_ip(server_id, params)
@@ -129,6 +161,17 @@ module PuppetX
         response = connection.send(method, *args)
         if response.status == 500
           raise ServerError.new(response.body['message'])
+        end
+        if response.status == 400
+          message = if response.body['modelState']
+            response.body['modelState'].inspect
+          else
+            response.body['message']
+          end
+          raise InvalidRequest.new(message)
+        end
+        if response.status == 404
+          raise ResourceNotFound.new(url)
         end
         response.body
       end
