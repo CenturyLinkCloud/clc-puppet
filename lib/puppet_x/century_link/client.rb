@@ -41,28 +41,17 @@ module PuppetX
       end
 
       def shutdown_server(id)
-        response = request(:post, "v2/operations/#{account}/servers/shutDown", [id])
-        server_response = response.first
-        unless server_response['isQueued']
-          raise InvalidRequest.new(server_response['errorMessage'])
-        end
-        wait_for(status_id(server_response))
+        operation(:shutDown, id)
         true
       end
 
       def pause_server(id)
-        response = request(:post, "v2/operations/#{account}/servers/pause", [id])
-        server_response = response.first
-        unless server_response['isQueued']
-          raise InvalidRequest.new(server_response['errorMessage'])
-        end
-        wait_for(status_id(server_response))
+        operation(:pause, id)
         true
       end
 
       def power_on_server(id)
-        response = request(:post, "v2/operations/#{account}/servers/powerOn", [id])
-        wait_for(status_id(response.first))
+        operation(:powerOn, id)
         true
       end
 
@@ -174,6 +163,15 @@ module PuppetX
           raise ResourceNotFound.new(url)
         end
         response.body
+      end
+
+      def operation(operation, id)
+        response = request(:post, "v2/operations/#{account}/servers/#{operation}", [id])
+        server_response = response.first
+        unless server_response['isQueued']
+          raise InvalidRequest.new(server_response['errorMessage'])
+        end
+        wait_for(status_id(server_response))
       end
 
       def show_operation(id)
