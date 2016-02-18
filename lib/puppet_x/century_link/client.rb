@@ -55,6 +55,16 @@ module PuppetX
         true
       end
 
+      def set_server_property(server_id, property, value)
+        response = request(:patch, "v2/servers/#{account}/#{server_id}", [{
+          op:     'set',
+          member: property,
+          value:  value,
+        }])
+        wait_for(response['id'])
+        true
+      end
+
       def list_servers(datacenter_id = datacenter_ids)
         Array(datacenter_id).map do |dc_id|
           datacenter = show_datacenter(dc_id)
@@ -98,6 +108,10 @@ module PuppetX
         response = request(:post, "v2/servers/#{account}/#{server_id}/publicIPAddresses", params)
         wait_for(response['id'])
         true
+      end
+
+      def show_public_ip(server_id, address)
+        request(:get, "v2/servers/#{account}/#{server_id}/publicIPAddresses/#{address}")
       end
 
       def follow(link)

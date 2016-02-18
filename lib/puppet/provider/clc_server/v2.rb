@@ -24,13 +24,23 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     group = client.show_group(server['groupId'])
 
     {
-      server_id: server['id'],
-      name:      server['description'],
-      group_id:  server['groupId'],
-      cpu:       details['cpu'],
-      memory:    details['memoryMB'] / 1024,
-      group:     group['name'],
-      ensure:    details['powerState'].to_sym,
+      server_id:         server['id'],
+      name:              server['description'],
+      group_id:          server['groupId'],
+      cpu:               details['cpu'],
+      memory:            details['memoryMB'] / 1024,
+      public_ip_address: public_ip_address_hash(server['id'], details),
+      group:             group['name'],
+      ensure:            details['powerState'].to_sym,
+    }
+  end
+
+  def self.public_ip_address_hash(server_id, server_details)
+    public_ip = server_details['ipAddresses'].find { |addr| !addr['public'].nil? }['public']
+    ip_data = client.show_public_ip(server_id, public_ip)
+    {
+      ports:               ip_data['ports'],
+      source_restrictions: ip_data['sourceRestrictions'],
     }
   end
 
@@ -89,6 +99,16 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     end
 
     true
+  end
+
+  def memory=(value)
+    client.set_server_property(server_id, 'memory', value.to_s)
+    @property_hash[:memory] = value
+  end
+
+  def cpu=(value)
+    client.set_server_property(server_id, 'cpu', value.to_s)
+    @property_hash[:cpu] = value
   end
 
   def destroy
