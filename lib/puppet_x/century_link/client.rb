@@ -60,7 +60,7 @@ module PuppetX
           datacenter = show_datacenter(dc_id)
           group_links = datacenter['links'].select { |l| l['rel'] == 'group' }
           groups = group_links.map do |link|
-            group = request(:get, "v2/groups/#{account}/#{link['id']}?serverDetail=detailed")
+            group = show_group(link['id'], true)
             flatten_groups(group)
           end.flatten
 
@@ -72,7 +72,7 @@ module PuppetX
         list_datacenters.map do |dc|
           group_links = dc['links'].select { |link| link['rel'] == 'group' }
           groups = group_links.map do |link|
-            group = request(:get, "v2/groups/#{account}/#{link['id']}")
+            group = show_group(link['id'], true)
             flatten_groups(group)
           end.flatten
         end.flatten
@@ -88,8 +88,10 @@ module PuppetX
         true
       end
 
-      def get_group(id)
-        request(:get, "v2/groups/#{account}/#{id}")
+      def show_group(id, server_details = false)
+        url = "v2/groups/#{account}/#{id}"
+        url += "?serverDetail=detailed" if server_details
+        request(:get, url)
       end
 
       def create_public_ip(server_id, params)
@@ -219,7 +221,7 @@ module PuppetX
         when 1
           builder.response :logger, ::Logger.new(STDOUT)
         when 2
-          builder.response :logger, ::Logger.new(STDOUT), :bodies => true
+          builder.response :logger, ::Logger.new(STDOUT), :bodies => (verbosity == 2)
         end
       end
     end

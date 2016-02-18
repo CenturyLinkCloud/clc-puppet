@@ -21,14 +21,14 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
   def self.server_to_hash(server)
     details = server['details'] || {}
-    group = client.get_group(server['groupId'])
+    group = client.show_group(server['groupId'])
 
     {
       server_id: server['id'],
       name:      server['description'],
+      group_id:  server['groupId'],
       cpu:       details['cpu'],
       memory:    details['memoryMB'] / 1024,
-      group_id:  server['groupId'],
       group:     group['name'],
       ensure:    details['powerState'].to_sym,
     }
@@ -36,7 +36,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
   def exists?
     Puppet.info("Checking if server #{name} exists")
-    started? || stopped? || paused? || maintenance?
+    started? || stopped? || paused?
   end
 
   def started?
@@ -55,44 +55,40 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
   end
 
   def create
-    if stopped? || paused?
-      start
-    else
-      Puppet.info("Starting server #{name}")
+    Puppet.info("Starting server #{name}")
 
-      fail("source_server_id can't be blank") if resource[:source_server_id].nil?
+    fail("source_server_id can't be blank") if resource[:source_server_id].nil?
 
-      config = {
-        'name'                 => name,
-        'description'          => name,
-        'type'                 => resource[:type],
-        'sourceServerId'       => resource[:source_server_id],
-        'cpu'                  => resource[:cpu],
-        'memoryGB'             => resource[:memory],
-        'storageType'          => resource[:storage_type],
-        'isManagedOS'          => resource[:managed],
-        'isManagedBackup'      => resource[:managed_backup],
-        'primaryDns'           => resource[:primary_dns],
-        'secondaryDns'         => resource[:secondary_dns],
-        'networkId'            => resource[:network_id],
-        'ipAddress'            => resource[:ip_address],
-        'password'             => resource[:password],
-        'sourceServerPassword' => resource[:source_server_password],
-        'customFields'         => resource[:custom_fields],
-      }
-      config = config_with_group(config)
+    config = {
+      'name'                 => name,
+      'description'          => name,
+      'type'                 => resource[:type],
+      'sourceServerId'       => resource[:source_server_id],
+      'cpu'                  => resource[:cpu],
+      'memoryGB'             => resource[:memory],
+      'storageType'          => resource[:storage_type],
+      'isManagedOS'          => resource[:managed],
+      'isManagedBackup'      => resource[:managed_backup],
+      'primaryDns'           => resource[:primary_dns],
+      'secondaryDns'         => resource[:secondary_dns],
+      'networkId'            => resource[:network_id],
+      'ipAddress'            => resource[:ip_address],
+      'password'             => resource[:password],
+      'sourceServerPassword' => resource[:source_server_password],
+      'customFields'         => resource[:custom_fields],
+    }
+    config = config_with_group(config)
 
-      server = client.create_server(remove_null_values(config))
+    server = client.create_server(remove_null_values(config))
 
-      @property_hash[:server_id] = server['id']
-      @property_hash[:ensure] = :present
+    @property_hash[:server_id] = server['id']
+    @property_hash[:ensure] = :present
 
-      if resource[:public_ip_address]
-        client.create_public_ip(@property_hash[:server_id], public_ip_config(resource[:public_ip_address]))
-      end
-
-      true
+    if resource[:public_ip_address]
+      client.create_public_ip(@property_hash[:server_id], public_ip_config(resource[:public_ip_address]))
     end
+
+    true
   end
 
   def destroy
@@ -100,6 +96,12 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     client.delete_server(server_id)
     @property_hash[:ensure] = :absent
     true
+  end
+
+  def start
+    Puppet.info("Starting server #{name}")
+    client.power_on_server(server_id)
+    @property_hash[:ensure] = :started
   end
 
   def stop
@@ -115,14 +117,6 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
   end
 
   private
-
-  def start
-    Puppet.info("Starting server #{name}")
-
-    client.power_on_server(server_id)
-
-    @property_hash[:ensure] = :started
-  end
 
   def public_ip_config(config)
     remove_null_values({

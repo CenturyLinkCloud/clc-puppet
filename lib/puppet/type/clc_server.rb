@@ -13,13 +13,32 @@ Puppet::Type.newtype(:clc_server) do
       provider.destroy if provider.exists?
     end
     newvalue(:started) do
-      provider.create unless provider.started?
+      if provider.exists?
+        provider.start unless provider.started?
+      else
+        provider.create
+      end
     end
     newvalue(:stopped) do
-      provider.stop unless provider.stopped?
+      if provider.exists?
+        provider.stop unless provider.stopped?
+      else
+        provider.create
+        provider.stop
+      end
     end
     newvalue(:paused) do
-      provider.pause unless provider.paused?
+      if provider.exists?
+        provider.pause unless provider.paused?
+      else
+        provider.create
+        provider.pause
+      end
+    end
+    def change_to_s(current, desired)
+      current = :started if current == :present
+      desired = current if desired == :present and current != :absent
+      current == desired ? current : "changed #{current} to #{desired}"
     end
     def insync?(is)
       is.to_s == should.to_s or
