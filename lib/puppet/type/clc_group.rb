@@ -1,5 +1,6 @@
 require 'puppet/parameter/boolean'
 require_relative '../../puppet_x/century_link/property/custom_field'
+require_relative '../../puppet_x/century_link/property/read_only'
 
 Puppet::Type.newtype(:clc_group) do
   desc 'CenturyLink cloud billing group'
@@ -26,11 +27,8 @@ Puppet::Type.newtype(:clc_group) do
     end
   end
 
-  newproperty(:group_id) do
+  newproperty(:group_id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
     desc 'The CLC generated id for the group'
-    validate do |value|
-      fail 'group_id is read-only'
-    end
   end
 
   newproperty(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do

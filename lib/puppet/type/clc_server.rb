@@ -1,5 +1,6 @@
 require 'puppet/parameter/boolean'
 require_relative '../../puppet_x/century_link/property/custom_field'
+require_relative '../../puppet_x/century_link/property/read_only'
 require_relative '../../puppet_x/century_link/property/hash'
 
 Puppet::Type.newtype(:clc_server) do
@@ -167,11 +168,8 @@ Puppet::Type.newtype(:clc_server) do
     desc 'Password of the source server, used only when creating a clone from an existing server'
   end
 
-  newproperty(:server_id) do
+  newproperty(:server_id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
     desc 'The CLC generated id for the server'
-    validate do |value|
-      fail 'server_id is read-only'
-    end
   end
 
   newparam(:custom_fields, parent: PuppetX::CenturyLink::Property::CustomField, array_matching: :all) do
