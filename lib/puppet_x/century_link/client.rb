@@ -65,24 +65,15 @@ module PuppetX
         true
       end
 
-      def list_servers(datacenter_id = datacenter_ids)
-        Array(datacenter_id).map do |dc_id|
-          datacenter = show_datacenter(dc_id)
-          group_links = datacenter['links'].select { |l| l['rel'] == 'group' }
-          groups = group_links.map do |link|
-            group = show_group(link['id'], true)
-            flatten_groups(group)
-          end.flatten
-
-          groups.map { |group| group['servers'] }.flatten.compact
-        end.flatten
+      def list_servers
+        list_groups(true).map { |group| group['servers'] }.flatten
       end
 
-      def list_groups
+      def list_groups(include_servers = false)
         list_datacenters.map do |dc|
-          group_links = dc['links'].select { |link| link['rel'] == 'group' }
+          group_links = dc['links'].select { |link| link['rel'] == 'group'}
           groups = group_links.map do |link|
-            group = show_group(link['id'], true)
+            group = show_group(link['id'], include_servers)
             flatten_groups(group)
           end.flatten
         end.flatten
