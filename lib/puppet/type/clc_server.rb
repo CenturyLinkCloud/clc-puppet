@@ -197,6 +197,10 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
+  newparam(:disks) do
+    desc 'Collection of disk parameters'
+  end
+
   autorequire(:clc_group) do
     self[:group]
   end

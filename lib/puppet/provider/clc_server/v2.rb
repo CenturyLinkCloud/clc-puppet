@@ -100,6 +100,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       'customFields'         => resource[:custom_fields],
     }
     config = config_with_group(config)
+    config = config_with_disks(config)
 
     server = client.create_server(remove_null_values(config))
 
@@ -163,6 +164,13 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       config['groupId'] = resource[:group_id]
     elsif resource[:group]
       config['groupId'] = find_group_by_name(resource[:group])['id']
+    end
+    config
+  end
+
+  def config_with_disks(config)
+    if resource[:disks]
+      config['additionalDisks'] = resource[:disks]
     end
     config
   end
