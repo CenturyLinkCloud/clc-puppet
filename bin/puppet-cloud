@@ -1,0 +1,21 @@
+#!/bin/bash
+
+CLC_USERNAME=${CLC_USERNAME:?"Need to set CLC_USERNAME"}
+CLC_PASSWORD=${CLC_PASSWORD:?"Need to set CLC_PASSWORD"}
+
+case "$1" in
+
+apply) puppet apply "$2" --modulepath ../ --test
+  ;;
+graph) if [ ! -e "graphs" ];
+       then
+         mkdir "graphs"
+       fi
+       puppet apply "$2" --modulepath ../ --noop --graph --graphdir graphs
+  ;;
+list)  puppet resource "${@:2}" --modulepath ../
+  ;;
+*)     echo "Usage : puppet cloud graph|list|apply ARGS"
+       exit
+
+esac
