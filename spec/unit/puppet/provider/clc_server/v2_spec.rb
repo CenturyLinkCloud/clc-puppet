@@ -55,6 +55,14 @@ describe Puppet::Type.type(:clc_server).provider(:v2) do
     end
   end
 
+  describe 'start' do
+    it 'should send a request to the CLC API to power on the server' do
+      VCR.use_cassette('start-server') do
+        expect(provider.start).to be_truthy
+      end
+    end
+  end
+
   describe 'pause' do
     it 'should send a request to the CLC API to pause the server' do
       VCR.use_cassette('pause-server') do
