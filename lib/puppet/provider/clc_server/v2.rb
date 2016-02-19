@@ -1,4 +1,5 @@
 require_relative '../../../puppet_x/century_link/clc'
+require_relative '../../../puppet_x/century_link/prefetch_error'
 
 Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
@@ -6,9 +7,13 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
   read_only(:server_id)
 
   def self.instances
-    servers = client.list_servers
-    servers.delete_if { |server| server['description'].nil? || server['description'] == '' }
-    servers.map { |server| new(server_to_hash(server)) }
+    begin
+      servers = client.list_servers
+      servers.delete_if { |server| server['description'].nil? || server['description'] == '' }
+      servers.map { |server| new(server_to_hash(server)) }
+    rescue Timeout::Error, StandardError => e
+      raise PuppetX::CenturyLink::PrefetchError.new(self.resource_type.name.to_s, e)
+    end
   end
 
   def self.prefetch(resources)

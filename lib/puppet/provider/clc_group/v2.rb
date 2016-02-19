@@ -1,4 +1,5 @@
 require_relative '../../../puppet_x/century_link/clc'
+require_relative '../../../puppet_x/century_link/prefetch_error'
 
 Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
@@ -8,8 +9,12 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   IGNORE_GROUP_NAMES = ['Archive', 'Templates']
 
   def self.instances
-    groups = client.list_groups
-    groups.map { |group| new(group_to_hash(group)) }
+    begin
+      groups = client.list_groups
+      groups.map { |group| new(group_to_hash(group)) }
+    rescue Timeout::Error, StandardError => e
+      raise PuppetX::CenturyLink::PrefetchError.new(self.resource_type.name.to_s, e)
+    end
   end
 
   def self.prefetch(resources)
