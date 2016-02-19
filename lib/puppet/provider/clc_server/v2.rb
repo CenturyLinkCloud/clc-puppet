@@ -23,7 +23,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     details = server['details'] || {}
     group = client.show_group(server['groupId'])
 
-    {
+    hash = {
       server_id:         server['id'],
       name:              server['description'],
       group_id:          server['groupId'],
@@ -33,14 +33,21 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       group:             group['name'],
       ensure:            details['powerState'].to_sym,
     }
+    public_ip_hash = public_ip_address_hash(server['id'], details)
+    hash[:public_ip_address] = public_ip_hash if public_ip_hash
+    hash
   end
 
   def self.public_ip_address_hash(server_id, server_details)
-    public_ip = server_details['ipAddresses'].find { |addr| !addr['public'].nil? }['public']
-    ip_data = client.show_public_ip(server_id, public_ip)
+    ip_addresses = server_details['ipAddresses']
+    public_ip = ip_addresses.find { |addr| !addr['public'].nil? }
+    return nil if public_ip.nil?
+
+    ip_data = client.show_public_ip(server_id, public_ip['public'])
     {
-      ports:               ip_data['ports'],
-      source_restrictions: ip_data['sourceRestrictions'],
+      'internal_ip'         => ip_data['internal'],
+      'ports'               => ip_data['ports'],
+      'source_restrictions' => ip_data['sourceRestrictions'],
     }
   end
 
@@ -95,7 +102,8 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     @property_hash[:ensure] = :present
 
     if resource[:public_ip_address]
-      client.create_public_ip(@property_hash[:server_id], public_ip_config(resource[:public_ip_address]))
+      params = public_ip_config(resource[:public_ip_address])
+      client.create_public_ip(@property_hash[:server_id], params)
     end
 
     true
@@ -140,8 +148,8 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
   def public_ip_config(config)
     remove_null_values({
-      'ports'              => config[:ports],
-      'sourceRestrictions' => config[:source_restrictions]
+      'ports'              => config[:ports] || config['ports'],
+      'sourceRestrictions' => config[:source_restrictions] || config['source_restrictions'],
     })
   end
 
