@@ -46,7 +46,7 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
     params = {
       'name'          => name,
       'description'   => resource[:description],
-      'parentGroupId' => resource[:parent_group_id],
+      'parentGroupId' => find_parent_group(resource),
       'customFields'  => resource[:custom_fields],
     }
 
@@ -62,5 +62,19 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
     client.delete_group(group_id)
 
     @property_hash[:ensure] = :absent
+  end
+
+  private
+
+  def find_parent_group(params)
+    if params[:parent_group_id]
+      params[:parent_group_id]
+    elsif params[:datacenter]
+      group = client.show_hw_group_for_datacenter(params[:datacenter])
+      group['id']
+    elsif params[:parent_group]
+      group = find_group_by_name(params[:parent_group])
+      group['id']
+    end
   end
 end

@@ -105,6 +105,16 @@ module PuppetX
         request(:get, "v2/servers/#{account}/#{server_id}/publicIPAddresses/#{address}")
       end
 
+      def show_datacenter(id, group_links = true)
+        request(:get, "v2/datacenters/#{account}/#{id}?groupLinks=#{group_links}")
+      end
+
+      def show_hw_group_for_datacenter(dc_id)
+        dc = show_datacenter(dc_id)
+        group_link = dc['links'].find { |link| link['rel'] == 'group' }
+        follow(group_link)
+      end
+
       def follow(link)
         request(:get, link['href'])
       end
@@ -187,10 +197,6 @@ module PuppetX
 
       def list_datacenters(group_links = true)
         request(:get, "v2/datacenters/#{account}?groupLinks=#{group_links}")
-      end
-
-      def show_datacenter(id, group_links = true)
-        request(:get, "v2/datacenters/#{account}/#{id}?groupLinks=#{group_links}")
       end
 
       def datacenter_ids

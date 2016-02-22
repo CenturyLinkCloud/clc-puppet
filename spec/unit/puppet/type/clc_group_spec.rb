@@ -9,7 +9,7 @@ describe Puppet::Type.type(:clc_group) do
     }
   }
 
-  [:name, :parent_group_id].each do |field|
+  [:name, :parent_group_id, :parent_group, :datacenter].each do |field|
     it_behaves_like "it has a non-empty string parameter", field
   end
 
