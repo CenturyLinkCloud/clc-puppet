@@ -130,13 +130,13 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
-  newparam(:type) do
+  newproperty(:type) do
     desc 'Whether to create a standard, hyperscale, or bareMetal server'
     newvalues(:standard, :hyperscale, :bareMetal)
     defaultto :standard
   end
 
-  newparam(:storage_type) do
+  newproperty(:storage_type) do
     desc 'Storage type'
     newvalues(:standard, :premium, :hyperscale)
   end
@@ -197,8 +197,24 @@ Puppet::Type.newtype(:clc_server) do
     end
   end
 
+  newproperty(:ip_addresses, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+    desc 'Server ip addresses'
+  end
+
   newparam(:disks) do
     desc 'Collection of disk parameters'
+  end
+
+  newproperty(:location, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+    desc 'Server location'
+  end
+
+  newproperty(:os_type, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+    desc 'Server os type'
+  end
+
+  newproperty(:os, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+    desc 'Server os'
   end
 
   autorequire(:clc_group) do

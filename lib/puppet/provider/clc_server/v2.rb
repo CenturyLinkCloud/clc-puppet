@@ -4,7 +4,7 @@ require_relative '../../../puppet_x/century_link/prefetch_error'
 Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
 
-  read_only(:server_id)
+  read_only(:server_id, :os_type, :os, :location, :ip_addresses)
 
   def self.instances
     begin
@@ -31,10 +31,16 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     hash = {
       server_id:         server['id'],
       name:              server['description'],
+      type:              server['type'],
+      storage_type:      server['storageType'],
+      location:          server['locationId'],
+      os_type:           server['osType'],
+      os:                server['os'],
       group_id:          server['groupId'],
       cpu:               details['cpu'],
       memory:            details['memoryMB'] / 1024,
       public_ip_address: public_ip_address_hash(server['id'], details),
+      ip_addresses:      details['ipAddresses'],
       group:             group['name'],
       ensure:            details['powerState'].to_sym,
     }
