@@ -105,6 +105,10 @@ module PuppetX
         request(:get, "v2/servers/#{account}/#{server_id}/publicIPAddresses/#{address}")
       end
 
+      def list_datacenters(group_links = true)
+        request(:get, "v2/datacenters/#{account}?groupLinks=#{group_links}")
+      end
+
       def show_datacenter(id, group_links = true)
         request(:get, "v2/datacenters/#{account}/#{id}?groupLinks=#{group_links}")
       end
@@ -193,10 +197,6 @@ module PuppetX
 
       def show_operation(id)
         request(:get, "v2/operations/#{account}/status/#{id}")
-      end
-
-      def list_datacenters(group_links = true)
-        request(:get, "v2/datacenters/#{account}?groupLinks=#{group_links}")
       end
 
       def datacenter_ids
