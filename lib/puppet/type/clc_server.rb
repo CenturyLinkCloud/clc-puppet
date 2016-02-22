@@ -168,7 +168,7 @@ Puppet::Type.newtype(:clc_server) do
     desc 'Password of the source server, used only when creating a clone from an existing server'
   end
 
-  newproperty(:server_id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+  newproperty(:id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
     desc 'The CLC generated id for the server'
   end
 

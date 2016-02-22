@@ -4,7 +4,7 @@ require_relative '../../../puppet_x/century_link/prefetch_error'
 Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
 
-  read_only(:server_id, :os_type, :os, :location, :ip_addresses)
+  read_only(:id, :os_type, :os, :location, :ip_addresses)
 
   def self.instances
     begin
@@ -29,7 +29,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     group = client.show_group(server['groupId'])
 
     hash = {
-      server_id:         server['id'],
+      id:                server['id'],
       name:              server['description'],
       type:              server['type'],
       storage_type:      server['storageType'],
@@ -110,49 +110,49 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
     server = client.create_server(remove_null_values(config))
 
-    @property_hash[:server_id] = server['id']
+    @property_hash[:id] = server['id']
     @property_hash[:ensure] = :present
 
     if resource[:public_ip_address]
       params = public_ip_config(resource[:public_ip_address])
-      client.create_public_ip(@property_hash[:server_id], params)
+      client.create_public_ip(@property_hash[:id], params)
     end
 
     true
   end
 
   def memory=(value)
-    client.set_server_property(server_id, 'memory', value.to_s)
+    client.set_server_property(id, 'memory', value.to_s)
     @property_hash[:memory] = value
   end
 
   def cpu=(value)
-    client.set_server_property(server_id, 'cpu', value.to_s)
+    client.set_server_property(id, 'cpu', value.to_s)
     @property_hash[:cpu] = value
   end
 
   def destroy
     Puppet.info("Deleting server #{name}")
-    client.delete_server(server_id)
+    client.delete_server(id)
     @property_hash[:ensure] = :absent
     true
   end
 
   def start
     Puppet.info("Starting server #{name}")
-    client.power_on_server(server_id)
+    client.power_on_server(id)
     @property_hash[:ensure] = :started
   end
 
   def stop
     Puppet.info("Stopping server #{name}")
-    client.shutdown_server(server_id)
+    client.shutdown_server(id)
     @property_hash[:ensure] = :stopped
   end
 
   def pause
     Puppet.info("Pausing server #{name}")
-    client.pause_server(server_id)
+    client.pause_server(id)
     @property_hash[:ensure] = :paused
   end
 

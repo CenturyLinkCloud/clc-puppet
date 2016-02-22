@@ -16,7 +16,7 @@ describe Puppet::Type.type(:clc_server) do
     it_behaves_like "it has a non-empty string parameter", field
   end
 
-  it_behaves_like "it has a read-only parameter", :server_id
+  it_behaves_like "it has a read-only parameter", :id
 
   it_behaves_like "it has custom fields"
 
