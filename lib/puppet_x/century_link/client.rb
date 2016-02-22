@@ -28,6 +28,14 @@ module PuppetX
         @account = authenticate(params[:username], params[:password])
       end
 
+      def list_templates
+        list_datacenters.inject({}) do |acc, dc|
+          templates = request(:get, "v2/datacenters/#{account}/#{dc['id']}/deploymentCapabilities")['templates']
+          acc[dc['id']] = templates
+          acc
+        end
+      end
+
       def create_server(params)
         server = request(:post, "v2/servers/#{account}", params)
         wait_for(status_id(server))
