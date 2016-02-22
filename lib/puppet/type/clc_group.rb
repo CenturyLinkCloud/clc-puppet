@@ -43,7 +43,7 @@ Puppet::Type.newtype(:clc_group) do
     end
   end
 
-  newproperty(:group_id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+  newproperty(:id, parent: PuppetX::CenturyLink::Property::ReadOnly) do
     desc 'The CLC generated id for the group'
   end
 

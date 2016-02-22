@@ -4,7 +4,7 @@ require_relative '../../../puppet_x/century_link/prefetch_error'
 Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
 
-  read_only(:group_id)
+  read_only(:id)
 
   IGNORE_GROUP_NAMES = ['Archive', 'Templates']
 
@@ -27,7 +27,7 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
 
   def self.group_to_hash(group)
     {
-      group_id:        group['id'],
+      id:              group['id'],
       name:            group['name'],
       description:     group['description'],
       custom_fields:   group['customFields'],
@@ -52,14 +52,14 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
 
     group = client.create_group(params)
 
-    @property_hash[:group_id] = group['id']
+    @property_hash[:id] = group['id']
     @property_hash[:ensure] = :present
   end
 
   def destroy
     Puppet.info("Deleting group #{name}")
 
-    client.delete_group(group_id)
+    client.delete_group(id)
 
     @property_hash[:ensure] = :absent
   end
