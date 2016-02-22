@@ -19,6 +19,10 @@ Puppet::Type.newtype(:clc_group) do
     desc 'User-defined description of this group'
   end
 
+  newproperty(:servers_count, parent: PuppetX::CenturyLink::Property::ReadOnly) do
+    desc 'Number of servers this group contains'
+  end
+
   newparam(:parent_group_id) do
     desc 'ID of the parent group'
     validate do |value|
@@ -35,7 +39,7 @@ Puppet::Type.newtype(:clc_group) do
     end
   end
 
-  newparam(:datacenter) do
+  newproperty(:datacenter) do
     desc 'Parent data center'
     validate do |value|
       fail 'datacenter should be a string' unless value.is_a?(String)

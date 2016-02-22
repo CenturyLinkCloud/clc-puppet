@@ -4,7 +4,7 @@ require_relative '../../../puppet_x/century_link/prefetch_error'
 Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
   mk_resource_methods
 
-  read_only(:id)
+  read_only(:id, :servers_count)
 
   IGNORE_GROUP_NAMES = ['Archive', 'Templates']
 
@@ -31,6 +31,8 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
       name:            group['name'],
       description:     group['description'],
       custom_fields:   group['customFields'],
+      servers_count:   group['serversCount'],
+      datacenter:      group['locationId'],
       ensure:          :present,
     }
   end
