@@ -103,6 +103,11 @@ module PuppetX
         request(:get, url)
       end
 
+      def set_group_defaults(id, params)
+        request(:post, "v2/groups/#{account}/#{id}/defaults", params)
+        true
+      end
+
       def create_public_ip(server_id, params)
         response = request(:post, "v2/servers/#{account}/#{server_id}/publicIPAddresses", params)
         wait_for(response['id'])

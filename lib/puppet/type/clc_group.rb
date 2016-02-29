@@ -55,6 +55,30 @@ Puppet::Type.newtype(:clc_group) do
     desc 'Collection of custom field ID-value pairs to set for the group'
   end
 
+  newparam(:defaults) do
+    desc 'Sets the defaults for a group'
+    validate do |value|
+      cpu = value[:cpu] || value['cpu']
+      if cpu
+        fail 'default cpu should be an integer' unless cpu.is_a?(Fixnum)
+        fail 'default cpu must be in 1..16 range' if cpu < 1 || cpu > 16
+      end
+
+      memory = value[:memory] || value['memory']
+      if memory
+        fail 'default memory should be an integer' unless memory.is_a?(Fixnum)
+        fail 'default memory must be in 1..128 range' if memory < 1 || memory > 128
+      end
+
+      [:primary_dns, :secondary_dns, :network_id, :template_name].each do |field|
+        field_value = value[field] || value[field.to_s]
+        if field_value
+          fail "default #{field} should be a string" unless field_value.is_a?(String)
+        end
+      end
+    end
+  end
+
   autorequire(:clc_group) do
     self[:parent_group]
   end

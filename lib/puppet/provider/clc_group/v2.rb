@@ -56,6 +56,16 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
 
     @property_hash[:id] = group['id']
     @property_hash[:ensure] = :present
+
+    if resource[:defaults]
+      begin
+        default_params = remove_null_values(group_defaults(resource[:defaults]))
+        client.set_group_defaults(group['id'], default_params)
+      rescue
+        client.delete_group(group['id'])
+        @property_hash[:ensure] = :absent
+      end
+    end
   end
 
   def destroy
@@ -78,5 +88,16 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
       group = find_group_by_name(params[:parent_group])
       group['id']
     end
+  end
+
+  def group_defaults(params)
+    {
+      'cpu'          => params['cpu'],
+      'memoryGb'     => params['memory'],
+      'networkId'    => params['network_id'],
+      'primaryDns'   => params['primary_dns'],
+      'secondaryDns' => params['secondary_dns'],
+      'templateName' => params['template_name'],
+    }
   end
 end
