@@ -114,8 +114,13 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     @property_hash[:ensure] = :present
 
     if resource[:public_ip_address]
-      params = public_ip_config(resource[:public_ip_address])
-      client.create_public_ip(@property_hash[:id], params)
+      begin
+        params = public_ip_config(resource[:public_ip_address])
+        client.create_public_ip(@property_hash[:id], params)
+      rescue
+        client.delete_server(@property_hash[:id])
+        @property_hash[:ensure] = :absent
+      end
     end
 
     true
