@@ -66,6 +66,8 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
         @property_hash[:ensure] = :absent
       end
     end
+
+    true
   end
 
   def destroy
