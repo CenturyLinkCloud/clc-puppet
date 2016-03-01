@@ -132,21 +132,50 @@ module PuppetX
         follow(group_link)
       end
 
+      def list_networks
+        list_datacenters.map do |dc|
+          networks = request(:get, "v2-experimental/networks/#{account}/#{dc['id']}")
+          networks.each do |network|
+            network['datacenter'] = dc['id']
+          end
+          networks
+        end.flatten
+      end
+
+      def claim_network(dc)
+        response = request(:post, "v2-experimental/networks/#{account}/#{dc}/claim")
+        response = wait_for(response['operationId'], experimental: true)
+        network_link = response['summary']['links'].find { |link| link['rel'] == 'network' }
+        follow(network_link)
+      end
+
+      def update_network(dc, id, params)
+        request(:put, "v2-experimental/networks/#{account}/#{dc}/#{id}", params)
+      end
+
+      def release_network(dc, id)
+        res = request(:post, "v2-experimental/networks/#{account}/#{dc}/#{id}/release")
+        puts res
+      end
+
       def follow(link)
         request(:get, link['href'])
       end
 
-      def wait_for(operation_id, timeout = 1200)
+      def wait_for(operation_id, options={})
+        timeout = options[:timeout] || 1200
+        experimental = options[:experimental].nil? ? false : options[:experimental]
         expire_at = Time.now + timeout
+
         loop do
-          operation = show_operation(operation_id)
+          operation = show_operation(operation_id, experimental)
           status = operation['status']
           yield status if block_given?
 
           case status
-          when 'succeeded' then return true
+          when 'succeeded' then return operation
           when 'failed', 'unknown' then raise 'Operation Failed' # reason?
-          when 'executing', 'resumed', 'notStarted'
+          when 'executing', 'running', 'resumed', 'notStarted', 'queued'
             raise 'Operation takes too much time to complete' if Time.now > expire_at
             next sleep(2)
           else
@@ -208,8 +237,9 @@ module PuppetX
         wait_for(status_id(server_response))
       end
 
-      def show_operation(id)
-        request(:get, "v2/operations/#{account}/status/#{id}")
+      def show_operation(id, experimental = false)
+        prefix = experimental ? "v2-experimental" : "v2"
+        request(:get, "#{prefix}/operations/#{account}/status/#{id}")
       end
 
       def datacenter_ids

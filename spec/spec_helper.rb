@@ -15,8 +15,10 @@ VCR.configure do |c|
     ENV['CLC_PASSWORD']
   end
   c.filter_sensitive_data('<AUTH_TOKEN>') do |interaction|
-    body = JSON.parse(interaction.response.body)
-    body['bearerToken'] if body.is_a?(Hash) && body.has_key?('bearerToken')
+    if interaction.response.body != ''
+      body = JSON.parse(interaction.response.body)
+      body['bearerToken'] if body.is_a?(Hash) && body.has_key?('bearerToken')
+    end
   end
   c.filter_sensitive_data('<AUTH_TOKEN>') do |interaction|
     auth_header = interaction.request.headers['Authorization']
