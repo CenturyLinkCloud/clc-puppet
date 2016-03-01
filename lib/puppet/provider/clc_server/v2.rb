@@ -99,13 +99,13 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       'isManagedBackup'      => resource[:managed_backup],
       'primaryDns'           => resource[:primary_dns],
       'secondaryDns'         => resource[:secondary_dns],
-      'networkId'            => resource[:network_id],
       'ipAddress'            => resource[:ip_address],
       'password'             => resource[:password],
       'sourceServerPassword' => resource[:source_server_password],
       'customFields'         => resource[:custom_fields],
     }
     config = config_with_group(config)
+    config = config_with_network(config)
     config = config_with_disks(config)
 
     server = client.create_server(remove_null_values(config))
@@ -184,5 +184,29 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
       config['additionalDisks'] = resource[:disks]
     end
     config
+  end
+
+  def config_with_network(config)
+    if resource[:network_id]
+      config['networkId'] = resource[:network_id]
+    elsif resource[:network]
+      config['networkId'] = find_network_by_name(resource[:network])['id']
+    end
+    config
+  end
+
+  def find_network_by_name(name)
+    networks = client.list_networks
+    matching_networks = networks.select { |network| network['name'] == name }
+
+    if matching_networks.empty?
+      raise Puppet::Error "Network '#{name}' not found"
+    end
+    if matching_networks.size > 1
+      raise Puppet::Error, "There are #{matching_networks.size} networks " \
+        "matching '#{name}'. Consider using network_id"
+    end
+
+    matching_networks.first
   end
 end

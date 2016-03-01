@@ -135,9 +135,7 @@ module PuppetX
       def list_networks
         list_datacenters.map do |dc|
           networks = request(:get, "v2-experimental/networks/#{account}/#{dc['id']}")
-          networks.each do |network|
-            network['datacenter'] = dc['id']
-          end
+          networks.each { |network| network['datacenter'] = dc['id'] }
           networks
         end.flatten
       end
@@ -154,8 +152,7 @@ module PuppetX
       end
 
       def release_network(dc, id)
-        res = request(:post, "v2-experimental/networks/#{account}/#{dc}/#{id}/release")
-        puts res
+        request(:post, "v2-experimental/networks/#{account}/#{dc}/#{id}/release")
       end
 
       def follow(link)

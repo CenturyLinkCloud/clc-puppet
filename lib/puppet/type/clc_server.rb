@@ -153,6 +153,10 @@ Puppet::Type.newtype(:clc_server) do
     desc 'ID of the network to which to deploy the server. If not provided, a network will be chosen automatically'
   end
 
+  newparam(:network) do
+    desc 'Network to which to deploy the server'
+  end
+
   newparam(:ip_address) do
     desc 'IP address to assign to the server. If not provided, one will be assigned automatically'
     validate do |value|
@@ -219,5 +223,9 @@ Puppet::Type.newtype(:clc_server) do
 
   autorequire(:clc_group) do
     self[:group]
+  end
+
+  autorequire(:clc_network) do
+    self[:network]
   end
 end
