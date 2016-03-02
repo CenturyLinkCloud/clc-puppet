@@ -67,6 +67,16 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
       end
     end
 
+    if resource[:scheduled_activities]
+      begin
+        scheduled_activities_params = remove_null_values(group_scheduled_activities(resource[:scheduled_activities]))
+        client.set_group_scheduled_activities(group['id'], scheduled_activities_params)
+      rescue
+        client.delete_group(group['id'])
+        @property_hash[:ensure] = :absent
+      end
+    end
+
     true
   end
 
@@ -100,6 +110,20 @@ Puppet::Type.type(:clc_group).provide(:v2, parent: PuppetX::CenturyLink::Clc) do
       'primaryDns'   => params['primary_dns'],
       'secondaryDns' => params['secondary_dns'],
       'templateName' => params['template_name'],
+    }
+  end
+
+  def group_scheduled_activities(params)
+    {
+      'status'           => params['status'],
+      'type'             => params['type'],
+      'beginDateUTC'     => params['begin_date'],
+      'repeat'           => params['repeat'],
+      'customWeeklyDays' => params['custom_weekly_days'],
+      'expire'           => params['expire'],
+      'expireCount'      => params['expire_count'],
+      'expireDateUTC'    => params['expire_date'],
+      'timeZoneOffset'   => params['time_zone_offset']
     }
   end
 end

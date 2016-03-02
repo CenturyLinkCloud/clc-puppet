@@ -108,6 +108,10 @@ module PuppetX
         true
       end
 
+      def set_group_scheduled_activities(id, params)
+        request(:post, "v2/groups/#{account}/#{id}/ScheduledActivities", params)
+      end
+
       def create_public_ip(server_id, params)
         response = request(:post, "v2/servers/#{account}/#{server_id}/publicIPAddresses", params)
         wait_for(response['id'])
