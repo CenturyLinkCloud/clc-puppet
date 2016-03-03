@@ -118,6 +118,11 @@ module PuppetX
         true
       end
 
+      def delete_public_ip(server_id, ip)
+        request(:delete, "v2/servers/#{account}/#{server_id}/publicIPAddresses/#{ip}")
+        true
+      end
+
       def show_public_ip(server_id, address)
         request(:get, "v2/servers/#{account}/#{server_id}/publicIPAddresses/#{address}")
       end

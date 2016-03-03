@@ -180,9 +180,11 @@ Puppet::Type.newtype(:clc_server) do
     desc 'Collection of custom field ID-value pairs to set for the server'
   end
 
-  newparam(:public_ip_address, parent: PuppetX::CenturyLink::Property::Hash) do
+  newproperty(:public_ip_address, parent: PuppetX::CenturyLink::Property::Hash) do
     desc 'Public IP address'
     validate do |value|
+      return if value == 'absent'
+
       super(value)
 
       ports = value[:ports] || value['ports']
@@ -198,6 +200,10 @@ Puppet::Type.newtype(:clc_server) do
           fail 'source_restrictions entry must be a hash' unless restriction.is_a?(::Hash)
         end
       end
+    end
+    def insync?(is)
+      (is.to_s == 'absent' && should.to_s == 'absent') ||
+        (is.is_a?(::Hash) && should.is_a?(::Hash))
     end
   end
 

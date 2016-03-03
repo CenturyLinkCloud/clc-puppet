@@ -35,7 +35,7 @@ module PuppetX
         matching_groups = groups.select { |group| group['name'] == name }
 
         if matching_groups.empty?
-          raise Puppet::Error "Group '#{resource[:group]}' not found"
+          raise Puppet::Error, "Group '#{resource[:group]}' not found"
         end
         if matching_groups.size > 1
           raise Puppet::Error, "There are #{matching_groups.size} groups " \

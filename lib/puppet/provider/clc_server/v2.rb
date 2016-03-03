@@ -52,11 +52,11 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
   def self.public_ip_address_hash(server_id, server_details)
     ip_addresses = server_details['ipAddresses']
     public_ip = ip_addresses.find { |addr| !addr['public'].nil? }
-    return nil if public_ip.nil?
+    return 'absent' if public_ip.nil?
 
     ip_data = client.show_public_ip(server_id, public_ip['public'])
     {
-      'internal_ip'         => ip_data['internal'],
+      'internal_ip'         => ip_data['internalIPAddress'],
       'ports'               => ip_data['ports'],
       'source_restrictions' => ip_data['sourceRestrictions'],
     }
@@ -136,6 +136,20 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     @property_hash[:cpu] = value
   end
 
+  def public_ip_address=(value)
+    if value == 'absent'
+      ip_addresses.each do |ip_data|
+        public_ip = ip_data['public']
+        if public_ip
+          client.delete_public_ip(id, public_ip)
+        end
+      end
+    else
+      params = public_ip_config(resource[:public_ip_address])
+      client.create_public_ip(id, params)
+    end
+  end
+
   def destroy
     Puppet.info("Deleting server #{name}")
     client.delete_server(id)
@@ -200,7 +214,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
     matching_networks = networks.select { |network| network['name'] == name }
 
     if matching_networks.empty?
-      raise Puppet::Error "Network '#{name}' not found"
+      raise Puppet::Error, "Network '#{name}' not found"
     end
     if matching_networks.size > 1
       raise Puppet::Error, "There are #{matching_networks.size} networks " \
