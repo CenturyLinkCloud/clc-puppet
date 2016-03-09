@@ -6,6 +6,7 @@
 4. [Usage](#usage)
 5. [Reference](#reference)
   * [Types](#types)
+  * [Parameters](#parameters)
 5. [Limitations](#limitations)
 
 ## Overview
@@ -131,6 +132,141 @@ clc_group { 'name-of-subgroup':
 * `clc_network`: Manages a CenturyLink Cloud network.
 * `clc_template`: A CenturyLink Cloud template. Work only for retrieval using puppet resource CLI.
 * `clc_dc`: A CenturyLink Cloud datacenter. Work only for retrieval using puppet resource CLI.
+
+### Parameters
+
+#### Type: clc_server
+
+##### `ensure`
+
+Specifies the basic state of the resource. Valid values are 'present', 'absent', 'started', 'stopped', 'paused'.
+
+Values have the following effects:
+
+* 'present': Ensure that the server exists in either the started or stopped or paused
+  state. If the server doesn't yet exist, a new one is created.
+* 'started': Ensures that the server is up and running. If the server
+  doesn't yet exist, a new one is created. This
+  can be used to resume paused servers.
+* 'stopped': Ensures that the server is created, but is not running. This
+  can be used to shut down running servers.
+* 'paused': Ensures that the server is created, but is paused. This
+  can be used to pause running servers.
+* 'absent': Ensures that the server doesn't exist on CenturyLink Cloud.
+
+##### `cpu`
+
+Specifies the number of CPU cores. Valid values are in 1..16 range.
+
+##### `memory`
+
+Specifies the amount of RAM (in gigabytes). Valid values are in 1..128 range.
+
+##### `group_id`
+
+ID of the parent group. Could be empty if `group` specified.
+
+##### `group`
+
+Name of the parent group. Could be empty if `group_id` specified.
+
+##### `source_server_id`
+
+*Required* ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID
+
+##### `managed`
+
+Boolean. Whether to create the server as managed or not. Default to false.
+
+##### `managed_backup`
+
+Boolean. Whether to add managed backup to the server. Must be a managed server. Default to false.
+
+##### `type`
+
+Type of server to create. Valid values are 'standard', 'hyperscale' or 'vareMetal'. Default to 'standard'.
+
+##### `storage_type`
+
+Type of storage for server. Valid values are 'standard', 'premium' or 'hyperscale'.
+
+##### `primary_dns`
+
+Primary DNS to set on the server.
+
+##### `secondary_dns`
+
+Secondary DNS to set on the server.
+
+##### `network_id`
+
+ID of the network to which to deploy the server.
+
+##### `network`
+
+Name of the network to which to deploy the server.
+
+##### `ip_address`
+
+IP address to assign to the server. If not provided, one will be assigned automatically.
+
+##### `password`
+
+Password of administrator or root user on server. If not provided, one will be generated automatically.
+
+##### `source_server_password`
+
+Password of the source server, used only when creating a clone from an existing server (e.g. `source_server_id` referencing exiting server).
+
+##### `custom_fields`
+
+Collection of custom field ID-value pairs to set for the server.
+
+##### `public_ip_address`
+
+Public IP address settings. Valid values are settings hash or 'absent'.
+
+Values:
+
+* settings hash:
+    hash with two keys
+    - ports: array of hashes with protocol/port pairs
+    - source_restrictions: array of hashes with source restrictions cidr
+
+    Example:
+    ```
+    public_ip_address => {
+        ports => [{protocol => TCP, port => 80}, {protocol => TCP, port => 443}],
+        source_restrictions => [{cidr => '10.0.0.0/24'}]
+    }
+    ```
+* 'absent': deletes assigned public IP.
+
+
+##### `id`
+
+_Read only_ ID of the server.
+
+##### `ip_addresses`
+
+_Read only_ Details about IP addresses associated with the server.
+
+##### `disks`
+
+_Read only_ The disks attached to the server.
+
+##### `location`
+
+_Read only_ Data center that this server resides in.
+
+##### `os_type`
+
+_Read only_ Friendly name of the Operating System the server is running.
+
+##### `os`
+
+_Read only_ Server os.
+
 
 ## Limitations
 
