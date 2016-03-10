@@ -64,7 +64,7 @@ Puppet::Type.type(:clc_server).provide(:v2, parent: PuppetX::CenturyLink::Clc) d
 
   def exists?
     Puppet.info("Checking if server #{name} exists")
-    started? || stopped? || paused?
+    @property_hash[:ensure] != nil && @property_hash[:ensure] != :absent
   end
 
   def started?
