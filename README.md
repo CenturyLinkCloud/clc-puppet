@@ -235,9 +235,13 @@ Values:
 
     Example:
     ```
-    public_ip_address => {
-        ports => [{protocol => TCP, port => 80}, {protocol => TCP, port => 443}],
-        source_restrictions => [{cidr => '10.0.0.0/24'}]
+    clc_server { 'test-server':
+        ....
+        public_ip_address => {
+            ports => [{protocol => TCP, port => 80}, {protocol => TCP, port => 443}],
+            source_restrictions => [{cidr => '10.0.0.0/24'}]
+        }
+        ...
     }
     ```
 * 'absent': deletes assigned public IP.
@@ -267,6 +271,120 @@ _Read only_ Friendly name of the Operating System the server is running.
 
 _Read only_ Server os.
 
+#### Type: clc_group
+
+##### `ensure`
+
+Specifies the basic state of the resource. Valid values are 'present' and 'absent'.
+
+Values have the following effects:
+
+* 'present': Ensure that the group exists. If the group doesn't yet exist, a new one is created.
+* 'absent': Ensures that the group doesn't exist on CenturyLink Cloud.
+
+##### `description`
+
+User-defined description of the group
+
+##### `servers_count`
+
+_Read only_ Number of servers this group contains
+
+##### `parent_group_id`
+
+ID of the parent group. Could be empty if `parent_group` or `datacenter` is specified.
+
+##### `parent_group`
+
+Name of the parent group. Could be empty if `parent_group_id` or `datacenter` is specified.
+
+##### `datacenter`
+
+Name of the parent datacenter. If specified group will be created as a top-level group in datacenter.
+Could be empty if `parent_group_id` or `parent_group` is specified.
+
+##### `id`
+
+_Read only_ ID of the group.
+
+##### `custom_fields`
+
+Collection of custom field ID-value pairs to set for the group.
+
+##### `defaults`
+
+Default values for the group. Value must be a hash.
+Valid hash keys are: 'cpu', 'memory', 'primary_dns', 'secondary_dns', 'network_id', 'template_name'.
+
+* 'cpu': Number of processors to configure the server. Value is an integer within 1..16 range.
+* 'memory': Number of GB of memory to configure the server. Value is an integer within 1..128 range.
+* 'primary_dns': Primary DNS to set on the server.
+* 'secondary_dbs': Secondary DNS to set on the server.
+* 'network_id': ID of the Network.
+* 'template_name': Name of the template to use as the source.
+
+Example:
+
+```
+clc_group { 'test-group':
+    ...
+    defaults => {
+        cpu => 2,
+        memory => 4,
+        primary_dns => '4.4.4.4',
+        secondary_dns => '8.8.8.8',
+        template_name => 'DEBIAN-7-64-TEMPLATE',
+    }
+    ...
+}
+
+```
+
+##### `scheduled_activities`
+
+Scheduled activities for a group. Value must be an array of hashes.
+Valid hash keys are: 'status', 'type', 'begin_date', 'repeat', 'custom_weekly_days', 'expire',
+'expire_count', 'expire_date', 'time_zone_offset'.
+
+* 'status': State of scheduled activity: 'on' or 'off'. _Required_
+* 'type': Type of activity: 'archive', 'createsnapshot', 'delete', 'deletesnapshot', 'pause', 'poweron', 'reboot', 'shutdown'. _Required_
+* 'begin_date': Time when scheduled activity should start (UTC). _Required_
+* 'repeat': How often to repeat: 'never', 'daily', 'weekly', 'monthly', 'customWeekly'. _Require_
+* 'custom_weekly_days': An array of strings for the days of the week: 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'.
+* 'expire': When the scheduled activities are set to expire: 'never', 'afterDate', 'afterCount'. _Required_
+* 'expire_count': Number of times scheduled activity should run before expiring.
+* 'expire_date': When the scheduled activity should expire (UTC).
+* 'time_zone_offset': To display in local time. _Required_
+
+
+Example:
+
+```
+clc_group { 'test-group':
+    ...
+    scheduled_activities => [
+        {
+            status => on,
+            'type' => reboot,
+            begin_date => "2015-11-23T19:41:00.000Z",
+            time_zone_offset => "-08:00",
+            repeat => weekly,
+            expire => never
+        },
+        {
+            status => on,
+            'type' => reboot,
+            begin_date => "2015-11-23T19:41:00.000Z",
+            time_zone_offset => "-08:00",
+            repeat => customWeekly,
+            expire => never,
+            custom_weekly_days => ['mon', 'wed', 'fri']
+        }
+    ]
+    ...
+}
+
+```
 
 ## Limitations
 
