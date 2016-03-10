@@ -2,11 +2,11 @@
   "name": "centurylink-clc",
   "version": "0.1.0",
   "author": "CenturyLink",
-  "summary": "",
+  "summary": "The clc module manages CenturyLink Cloud resources to build out cloud infrastructure",
   "license": "Apache-2.0",
-  "source": "",
-  "project_page": null,
-  "issues_url": null,
+  "source": "git@github.com:CenturyLinkCloud/clc-puppet.git",
+  "project_page": "https://github.com/CenturyLinkCloud/clc-puppet",
+  "issues_url": "https://github.com/CenturyLinkCloud/clc-puppet/issues",
   "dependencies": [
     {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
   ]
