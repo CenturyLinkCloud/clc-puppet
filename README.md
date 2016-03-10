@@ -386,6 +386,30 @@ clc_group { 'test-group':
 
 ```
 
+#### Type: clc_network
+
+##### `ensure`
+
+Specifies the basic state of the resource. Valid values are 'present' and 'absent'.
+
+Values have the following effects:
+
+* 'present': Ensure that the network exists. If the network doesn't yet exist, a new one is created.
+* 'absent': Ensures that the network doesn't exist on CenturyLink Cloud.
+
+##### `description`
+
+User-defined description of the network.
+
+##### `datacenter`
+
+Parent data center.
+
+##### `id`
+
+_Read only_ ID of the network.
+
+
 ## Limitations
 
 This module requires Ruby 1.9 or later and is only tested on Puppet versions 4.3 and later.
