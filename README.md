@@ -31,7 +31,7 @@ Also it allows to you to describe other resources (like resource groups, network
    On versions of Puppet Enterprise older than 2015.2.0, use the older path to the `gem` binary:
 
    ```
-   /opt/puppet/bin/gem install hocon --versiom='~>1.0.0' --no-ri --no-rdoc
+   /opt/puppet/bin/gem install hocon --no-ri --no-rdoc
    ```
 
 0. Set these environment variables for your CenturyLink Cloud access credentials:
