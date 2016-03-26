@@ -76,7 +76,7 @@ It also allows to you to describe other resources (like resource groups, network
 
 ### Creating Resources
 
-**Set up a server**
+#### Set up a server
 
 ```
 clc_server { 'name-of-server':
@@ -97,7 +97,7 @@ clc_server { 'name-of-server':
 }
 ```
 
-**Set up a group**
+#### Set up a group
 
 ```
 clc_group { 'name-of-group':
