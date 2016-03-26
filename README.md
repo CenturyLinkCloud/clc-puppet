@@ -25,8 +25,9 @@ It also allows to you to describe other resources (like resource groups, network
 
 ## Requirements
 
-* Ruby 1.9 or later
-* OS?
+* Ruby 1.9 and later
+* Puppet versions 4.3 and later
+* OS??
 
 ## Installation
 
