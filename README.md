@@ -2,27 +2,35 @@
 
 1. [Overview](#overview)
 2. [Module Description](#description)
-3. [Setup](#setup)
-4. [Usage](#usage)
-5. [Reference](#reference)
+3. [Requirements](#requirements)
+4. [Setup](#setup)
+5. [Usage](#usage)
+6. [Reference](#reference)
   * [Types](#types)
   * [Parameters](#parameters)
-5. [Limitations](#limitations)
+7. [Limitations](#limitations)
+8. [Contributing](#contributing)
+9. [License](#license)
 
 ## Overview
 
-The clc module manages CenturyLink Cloud resources to build out cloud infrastructure.
+The CLC module manages CenturyLink Cloud resources to build out cloud infrastructure.
 
 ## Description
 
-CenturyLink Cloud exposes a powerful API for creating and managing its Infrastructure as a Service platform.
-The aws module allows you to drive that API using Puppet code.
-In the simplest case, this allows you to manage CLC serveers from Puppet code.
-Also it allows to you to describe other resources (like resource groups, networks) and to model the relationships between different components.
+CenturyLink Cloud exposes a powerful API for creating and managing its Infrastructure-as-a-Service platform.
+The AWS module allows you to drive that API using Puppet code.
+In the simplest case, this allows you to manage CLC servers from Puppet code.
+It also allows to you to describe other resources (like resource groups, networks) and to model the relationships between different components.
 
-## Setup
+## Requirements
 
-0. Install the required gems
+* Ruby 1.9 or later
+* OS?
+
+## Installation
+
+1. Install the required Ruby gems.
 
    ```
    /opt/puppetlabs/puppet/bin/gem install hocon --no-ri --no-rdoc
@@ -34,14 +42,16 @@ Also it allows to you to describe other resources (like resource groups, network
    /opt/puppet/bin/gem install hocon --no-ri --no-rdoc
    ```
 
-0. Set these environment variables for your CenturyLink Cloud access credentials:
+2. Set these environment variables for your CenturyLink Cloud access credentials:
 
     ```
     export CLC_USERNAME=your_username
     export CLC_PASSWORD=your_password
     ```
 
-    Alternatively, you can provide the information in a configuration file of [HOCON format](https://github.com/typesafehub/config). Store this as clc.conf in the relevant [confdir](https://docs.puppetlabs.com/puppet/latest/reference/dirs_confdir.html). This should be:
+    Alternatively, you can provide the information in a configuration file of [HOCON format](https://github.com/typesafehub/config). Store this as clc.conf in the relevant [confdir](https://docs.puppetlabs.com/puppet/latest/reference/dirs_confdir.html).
+
+    This should be:
 
     * nix Systems: `/etc/puppetlabs/puppet`
     * Windows: `C:\ProgramData\PuppetLabs\puppet\etc`
@@ -56,17 +66,17 @@ Also it allows to you to describe other resources (like resource groups, network
     }
     ```
 
-0. Finally, install the module with:
+3. Finally, install the module with:
 
     ```
     puppet module install centurylink-clc
     ```
 
-## Usage
+## Commands
 
-### Creating resources
+### Creating Resources
 
-*Set up a server*:
+**Set up a server**
 
 ```
 clc_server { 'name-of-server':
@@ -87,7 +97,7 @@ clc_server { 'name-of-server':
 }
 ```
 
-*Set up a group*:
+**Set up a group**
 
 ```
 clc_group { 'name-of-group':
@@ -107,7 +117,7 @@ clc_group { 'name-of-subgroup':
 }
 ```
 
-Also you can refer group by name:
+Also, you can refer to the group by name:
 
 ```
 clc_group { 'name-of-parent-group':
@@ -130,8 +140,8 @@ clc_group { 'name-of-subgroup':
 * `clc_server`: Manages a server in CenturyLink Cloud.
 * `clc_group`: Manages a CenturyLink Cloud group.
 * `clc_network`: Manages a CenturyLink Cloud network.
-* `clc_template`: A CenturyLink Cloud template. Work only for retrieval using puppet resource CLI.
-* `clc_dc`: A CenturyLink Cloud datacenter. Work only for retrieval using puppet resource CLI.
+* `clc_template`: A CenturyLink Cloud template. Works only for retrieval using a Puppet resource CLI.
+* `clc_dc`: A CenturyLink Cloud datacenter. Work only for retrieval using a Puppet resource CLI.
 
 ### Parameters
 
@@ -143,52 +153,51 @@ Specifies the basic state of the resource. Valid values are 'present', 'absent',
 
 Values have the following effects:
 
-* 'present': Ensure that the server exists in either the started or stopped or paused
-  state. If the server doesn't yet exist, a new one is created.
-* 'started': Ensures that the server is up and running. If the server
-  doesn't yet exist, a new one is created. This
-  can be used to resume paused servers.
-* 'stopped': Ensures that the server is created, but is not running. This
-  can be used to shut down running servers.
-* 'paused': Ensures that the server is created, but is paused. This
-  can be used to pause running servers.
+* 'present': Ensures that the server exists in either the started, stopped, or paused state.
+  If the server doesn't yet exist, a new one is created.
+* 'started': Ensures that the server is up and running. If the server doesn't yet exist, a new one is created.
+  This can be used to resume paused servers.
+* 'stopped': Ensures that the server is created, but is not running.
+  This can be used to shut down running servers.
+* 'paused': Ensures that the server is created, but is paused.
+  This can be used to pause running servers.
 * 'absent': Ensures that the server doesn't exist on CenturyLink Cloud.
 
 ##### `cpu`
 
-Specifies the number of CPU cores. Valid values are in 1..16 range.
+Specifies the number of CPU cores. Valid values are in the 1..16 range.
 
 ##### `memory`
 
-Specifies the amount of RAM (in gigabytes). Valid values are in 1..128 range.
+Specifies the amount of RAM (in gigabytes). Valid values are in the 1..128 range.
 
 ##### `group_id`
 
-ID of the parent group. Could be empty if `group` specified.
+ID of the parent group. Could be empty if `group` is specified.
 
 ##### `group`
 
-Name of the parent group. Could be empty if `group_id` specified.
+Name of the parent group. Could be empty if `group_id` is specified.
 
 ##### `source_server_id`
 
-*Required* ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID
+*Required* ID of the server to use a source. May be the ID of a template, or when cloning, an existing server ID.
 
 ##### `managed`
 
-Boolean. Whether to create the server as managed or not. Default to false.
+Boolean. Whether to create the server as managed or not. Defaults to false.
 
 ##### `managed_backup`
 
-Boolean. Whether to add managed backup to the server. Must be a managed server. Default to false.
+Boolean. Whether to add managed backup to the server. Must be a managed server. Defaults to false.
 
 ##### `type`
 
-Type of server to create. Valid values are 'standard', 'hyperscale' or 'vareMetal'. Default to 'standard'.
+Type of server to create. Valid values are 'standard', 'hyperscale', or 'bareMetal'. Defaults to 'standard'.
 
 ##### `storage_type`
 
-Type of storage for server. Valid values are 'standard', 'premium' or 'hyperscale'.
+Type of storage for server. Valid values are 'standard', 'premium', or 'hyperscale'.
 
 ##### `primary_dns`
 
@@ -216,7 +225,7 @@ Password of administrator or root user on server. If not provided, one will be g
 
 ##### `source_server_password`
 
-Password of the source server, used only when creating a clone from an existing server (e.g. `source_server_id` referencing exiting server).
+Password of the source server, used only when creating a clone from an existing server (e.g. `source_server_id` referencing existing server).
 
 ##### `custom_fields`
 
@@ -224,7 +233,7 @@ Collection of custom field ID-value pairs to set for the server.
 
 ##### `public_ip_address`
 
-Public IP address settings. Valid values are settings hash or 'absent'.
+Public IP address settings. Valid values are 'settings hash' or 'absent'.
 
 Values:
 
@@ -265,11 +274,12 @@ _Read only_ Data center that this server resides in.
 
 ##### `os_type`
 
-_Read only_ Friendly name of the Operating System the server is running.
+_Read only_ Friendly name of the Operating System (OS) that the server is running.
 
 ##### `os`
 
-_Read only_ Server os.
+_Read only_ Server OS.
+
 
 #### Type: clc_group
 
@@ -284,11 +294,11 @@ Values have the following effects:
 
 ##### `description`
 
-User-defined description of the group
+User-defined description of the group.
 
 ##### `servers_count`
 
-_Read only_ Number of servers this group contains
+_Read only_ Number of servers this group contains.
 
 ##### `parent_group_id`
 
@@ -300,7 +310,7 @@ Name of the parent group. Could be empty if `parent_group_id` or `datacenter` is
 
 ##### `datacenter`
 
-Name of the parent datacenter. If specified group will be created as a top-level group in datacenter.
+Name of the parent datacenter, if specified group will be created as a top-level group in datacenter.
 Could be empty if `parent_group_id` or `parent_group` is specified.
 
 ##### `id`
@@ -314,10 +324,10 @@ Collection of custom field ID-value pairs to set for the group.
 ##### `defaults`
 
 Default values for the group. Value must be a hash.
-Valid hash keys are: 'cpu', 'memory', 'primary_dns', 'secondary_dns', 'network_id', 'template_name'.
+Valid hash keys are: 'cpu', 'memory', 'primary_dns', 'secondary_dns', 'network_id', and 'template_name'.
 
-* 'cpu': Number of processors to configure the server. Value is an integer within 1..16 range.
-* 'memory': Number of GB of memory to configure the server. Value is an integer within 1..128 range.
+* 'cpu': Number of processors to configure the server. Value is an integer within the 1..16 range.
+* 'memory': Number of GB of memory to configure the server. Value is an integer within the 1..128 range.
 * 'primary_dns': Primary DNS to set on the server.
 * 'secondary_dbs': Secondary DNS to set on the server.
 * 'network_id': ID of the Network.
@@ -344,12 +354,12 @@ clc_group { 'test-group':
 
 Scheduled activities for a group. Value must be an array of hashes.
 Valid hash keys are: 'status', 'type', 'begin_date', 'repeat', 'custom_weekly_days', 'expire',
-'expire_count', 'expire_date', 'time_zone_offset'.
+'expire_count', 'expire_date', and 'time_zone_offset'.
 
 * 'status': State of scheduled activity: 'on' or 'off'. _Required_
 * 'type': Type of activity: 'archive', 'createsnapshot', 'delete', 'deletesnapshot', 'pause', 'poweron', 'reboot', 'shutdown'. _Required_
 * 'begin_date': Time when scheduled activity should start (UTC). _Required_
-* 'repeat': How often to repeat: 'never', 'daily', 'weekly', 'monthly', 'customWeekly'. _Require_
+* 'repeat': How often to repeat: 'never', 'daily', 'weekly', 'monthly', 'customWeekly'. _Required_
 * 'custom_weekly_days': An array of strings for the days of the week: 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'.
 * 'expire': When the scheduled activities are set to expire: 'never', 'afterDate', 'afterCount'. _Required_
 * 'expire_count': Number of times scheduled activity should run before expiring.
@@ -413,3 +423,16 @@ _Read only_ ID of the network.
 ## Limitations
 
 This module requires Ruby 1.9 or later and is only tested on Puppet versions 4.3 and later.
+
+## Contributing
+
+1. Fork the main repository. https://github.com/CenturyLinkCloud/clc-puppet/fork.
+2. Create a feature branch from the master branch. `git checkout -b my-new-feature`
+3. Commit your changes to the feature branch. `git commit -am 'Add some feature'`
+4. Push to the master branch. `git push origin my-new-feature`
+5. Create a new Pull Request (to CenturyLinkCloud/clc-puppet).
+6. Specs and Code Style checks should pass before the Code Review.
+
+## License
+
+The project is licensed under the [Apache License v2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
