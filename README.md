@@ -19,7 +19,6 @@ The CLC module manages CenturyLink Cloud resources to build out cloud infrastruc
 ## Description
 
 CenturyLink Cloud exposes a powerful API for creating and managing its Infrastructure-as-a-Service platform.
-The AWS module allows you to drive that API using Puppet code.
 In the simplest case, this allows you to manage CLC servers from Puppet code.
 It also allows to you to describe other resources (like resource groups, networks) and to model the relationships between different components.
 
@@ -27,7 +26,6 @@ It also allows to you to describe other resources (like resource groups, network
 
 * Ruby 1.9 and later
 * Puppet versions 4.3 and later
-* OS??
 
 ## Installation
 
